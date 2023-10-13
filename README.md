@@ -1,8 +1,21 @@
 # QCsimulator
+
 The quantum circuit simulator that use GPU/parrallel computation to accerate the simulation speed.
-I wish we could support the fastest 
+I wish we could support the fastest qubit simulation to support the future quantum algorithm design and analysis!
 
 
+
+
+
+# Type Checking Should be strictly followed! 
+
+https://realpython.com/python-type-checking/
+
+
+
+
+
+py -m mypy .\State\State.py
 
 # A basic two qubit gate simulator:
 
@@ -14,14 +27,17 @@ In the first step, we need to implement a simple circuit simulator using Numpy.
 - [x] Phase gate
 - [x] pi/8 gate
 - [x] CNOT
-- [ ] swap
-- [ ] Controlled-Z
-- [ ] controlled-phase
-- [ ] Toffoli
-- [ ] Fredkin
-- [ ] Rx(\theta),Ry(\theta),Rz(\theta)
+- [x] swap
+- [x] Controlled-Z
+- [x] controlled-phase
+- [x] Toffoli
+- [x] Fredkin
+- [x] Rx(\theta),Ry(\theta),Rz(\theta)
+- [ ] Single qubit gate act on single qubit state
 
+# Practice Cuda
 
+- [ ] Use cuda to calculate the Single qubit gate operation
 
 
 # Tensor Product and Measurement
@@ -46,9 +62,7 @@ After we have implemented
 - [ ] Writes test code that compare the running speed and storage requirement between cuircuit computation with qiskit.
 
 
-
 # Using Cudu and GPU to accelerate simulation
-
 
 
 
@@ -108,6 +122,7 @@ After we have implemented
 # Frontend website
 - [ ] Write a frontend website for demonstration
 - [ ] Wirte documentation
+
 
 # Density Matrix
 
