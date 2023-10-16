@@ -21,7 +21,7 @@ class QuantumState:
         If the user doesn't specify the state vecter, we will create a default state
         |000...000> for him.
         '''
-        if state_vector == None:
+        if state_vector is None:
             state_vector = np.array([0] * (2 ** qubit_number), dtype=Parameter.qtype)
             state_vector[0] = 1
         if 2 ** qubit_number != state_vector.shape[0]:
@@ -41,7 +41,7 @@ class QuantumState:
         If the user doesn't specify the state vecter, we will create a default state
         |000...000> for him.
         '''
-        if state_vector == None:
+        if state_vector is None:
             state_vector = np.array([0] * (2 ** self.qubit_number), dtype=Parameter.qtype)
             state_vector[0] = 1
         if 2 ** self.qubit_number != state_vector.shape[0]:
@@ -62,7 +62,7 @@ class QuantumState:
 
     def tensor_product(self, other_state: "QuantumState") -> "QuantumState":
         tensor_product_vector = np.kron(self.state_vector, other_state.state_vector)
-        return QuantumState(np.array(tensor_product_vector, dtype=Parameter.qtype))
+        return QuantumState(np.array(tensor_product_vector, dtype=Parameter.qtype),qubit_number=self.qubit_number+other_state.qubit_number)
 
     def show_state(self) -> None:
         print(self.state_vector)

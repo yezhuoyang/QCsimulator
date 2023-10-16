@@ -4,7 +4,7 @@ import Parameter
 from Gate import *
 from Gate.Gate import QuantumGate
 from State import QuantumState
-from typing import List, Union
+from typing import List, Union, Any
 
 
 class QuantumCircuit:
@@ -127,6 +127,10 @@ class NumpyCircuit(QuantumCircuit):
     def calc_kron(self, gateindex: int) -> np.ndarray:
         (gate, qubit_indices, index) = self.gate_list[gateindex]
         I = np.array([[1, 0], [0, 1]], dtype=Parameter.qtype)
+        '''
+        Matrix form for single qubit gate, we can simply use np.kron to
+        generate the final matrix
+        '''
         if gate.num_qubits == 1:
             if gateindex == 0:
                 matrix = gate.matrix()
@@ -134,12 +138,15 @@ class NumpyCircuit(QuantumCircuit):
                 matrix = I
                 for i in range(0, gateindex - 1):
                     matrix = np.kron(matrix, I)
+                matrix = np.kron(matrix, gate.matrix)
             for i in range(gateindex, self.num_qubits):
                 matrix = np.kron(matrix, I)
-        else:
+        elif gate.num_qubits == 2:
             '''
             TODO: Two or three qubit gates
             '''
+            return None
+        elif gate.num_qubits == 3:
             return None
         return matrix
 
@@ -180,13 +187,15 @@ class NumpyCircuit(QuantumCircuit):
             self.compute()
         return NotImplementedError("Subclasses must implement measure method.")
 
-    def measureAll(self, statestr: str) -> NotImplementedError:
+    def measureAll(self, statestr: str) -> np.complex128:
         '''
         First make sure the computation is done
         '''
         if self.calc_step != self.num_qubits:
             self.compute()
-        return NotImplementedError("Subclasses must implement measureAll method.")
+        if len(statestr) != self.num_qubits:
+            raise ValueError("Qubit number does not match in the measurement!")
+        return np.complex128(abs(self.state.state_vector[int(statestr, 2)])**2)
 
     def visulize(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement visulize method.")
