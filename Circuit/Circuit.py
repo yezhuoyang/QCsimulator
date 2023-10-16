@@ -101,6 +101,24 @@ class NumpyCircuit(QuantumCircuit):
         self.gate_num += 1
 
     '''
+    Change the index between two qubits of the input state_vector and return the modified state vector
+    Params:
+    '''
+
+    def qubit_state_swap(self, num_qubits: int, state_vector: np.ndarray, index1: int, index2: int) -> np.ndarray:
+
+        return
+
+    '''
+    Change the index between two qubits of the input gate_matrix and return the modified gatematrix
+    Params:
+    '''
+
+    def qubit_matrix_swap(self, num_qubits: int, gate_matrix: np.ndarray, index1: int, index2: int) -> np.ndarray:
+
+        return
+
+    '''
     TODO:Calculate the matrix form of a gate after kron product
     This part is the most difficult because for a 2-qubit gates,
     we have to swap two index together before we can do simple kroneck product
@@ -158,7 +176,7 @@ class NumpyCircuit(QuantumCircuit):
         '''
         First make sure the computation is done
         '''
-        if self.calc_step!=self.num_qubits:
+        if self.calc_step != self.num_qubits:
             self.compute()
         return NotImplementedError("Subclasses must implement measure method.")
 
@@ -166,7 +184,7 @@ class NumpyCircuit(QuantumCircuit):
         '''
         First make sure the computation is done
         '''
-        if self.calc_step!=self.num_qubits:
+        if self.calc_step != self.num_qubits:
             self.compute()
         return NotImplementedError("Subclasses must implement measureAll method.")
 

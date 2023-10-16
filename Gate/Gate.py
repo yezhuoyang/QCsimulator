@@ -122,7 +122,7 @@ class Swap(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         swap = np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=Parameter.qtype)
-        return cphase
+        return swap
 
 
 class ControlledZ(QuantumGate):
