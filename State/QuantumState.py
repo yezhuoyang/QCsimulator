@@ -11,7 +11,8 @@ class QuantumState:
     '''
     First way of initialization: By
     '''
-    def __init__(self, state_vector: np.ndarray[Parameter.qtype]=None, qubit_number: int=1) -> None:
+
+    def __init__(self, state_vector: np.ndarray[Parameter.qtype] = None, qubit_number: int = 1) -> None:
         # The input dimension of state vector must be (n,)
         if len(list(state_vector.shape)) > 1:
             raise ValueError(f"Invalid dimension: {state_vector} is not a vector.")
@@ -20,9 +21,9 @@ class QuantumState:
         If the user doesn't specify the state vecter, we will create a default state
         |000...000> for him.
         '''
-        if state_vector==None:
-            state_vector=np.array([0]*(2**qubit_number),dtype=Parameter.qtype)
-            state_vector[0]=1
+        if state_vector == None:
+            state_vector = np.array([0] * (2 ** qubit_number), dtype=Parameter.qtype)
+            state_vector[0] = 1
         if 2 ** qubit_number != state_vector.shape[0]:
             raise ValueError("Qubit number doesn't match the shape of the state vector")
         self.state_vector = state_vector
@@ -31,10 +32,22 @@ class QuantumState:
     '''
     Reset the state.
     '''
-    def reset_state(self) -> None:
-        return None
-
-
+    def reset_state(self, state_vector: np.ndarray[Parameter.qtype] = None) -> None:
+        # The input dimension of state vector must be (n,)
+        if len(list(state_vector.shape)) > 1:
+            raise ValueError(f"Invalid dimension: {state_vector} is not a vector.")
+        self.qubit_number = self.qubit_number
+        '''
+        If the user doesn't specify the state vecter, we will create a default state
+        |000...000> for him.
+        '''
+        if state_vector == None:
+            state_vector = np.array([0] * (2 ** self.qubit_number), dtype=Parameter.qtype)
+            state_vector[0] = 1
+        if 2 ** self.qubit_number != state_vector.shape[0]:
+            raise ValueError("Qubit number doesn't match the shape of the state vector")
+        self.state_vector = state_vector
+        self.normalize()
 
     def normalize(self) -> None:
         norm = np.sqrt(sum([abs(x) ** 2 for x in self.state_vector]))
@@ -53,6 +66,3 @@ class QuantumState:
 
     def show_state(self) -> None:
         print(self.state_vector)
-
-
-
