@@ -100,23 +100,6 @@ class NumpyCircuit(QuantumCircuit):
         self.gate_list.append((gate, qubit_indices, self.gate_num))
         self.gate_num += 1
 
-    '''
-    Change the index between two qubits of the input state_vector and return the modified state vector
-    Params:
-    '''
-
-    def qubit_state_swap(self, num_qubits: int, state_vector: np.ndarray, index1: int, index2: int) -> np.ndarray:
-
-        return
-
-    '''
-    Change the index between two qubits of the input gate_matrix and return the modified gatematrix
-    Params:
-    '''
-
-    def qubit_matrix_swap(self, num_qubits: int, gate_matrix: np.ndarray, index1: int, index2: int) -> np.ndarray:
-
-        return
 
     '''
     TODO:Calculate the matrix form of a gate after kron product
