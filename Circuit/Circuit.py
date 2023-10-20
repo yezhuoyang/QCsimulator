@@ -102,6 +102,25 @@ class NumpyCircuit(QuantumCircuit):
 
 
     '''
+    Given an integer state_int, return the bit status of qubit qubit_index
+    regarding to the bit in the binary representation of state_int.
+    For example, when state_int=3, the circuit has 4 qubit, and the qubit_index=1
+    First we transform 3 into binary form 101, and we found that the 1th qubit(count from
+    left to right) has status 0, so the function will return 0. 
+    TODO: How to optimize the bitstatus and matrix construction function?
+    '''
+    def bitstatus(self,qubit_index: int, state_int: int):
+        '''
+        Before calculation, check whether the state_int and
+        qubit_index is valid.
+        For performance in the future, this code will be muted.
+        '''
+        if qubit_index>=self.num_qubits or state_int<0 or state_int>=(1<<self.num_qubits):
+            raise ValueError("qubit_index or state_int out of range!")
+        return (state_int>>(self.num_qubits-qubit_index-1))&1
+
+
+    '''
     TODO:Calculate the matrix form of a gate after kron product
     This part is the most difficult because for a 2-qubit gates,
     we have to swap two index together before we can do simple kroneck product
@@ -114,17 +133,49 @@ class NumpyCircuit(QuantumCircuit):
         Matrix form for single qubit gate, we can simply use np.kron to
         generate the final matrix
         '''
+        matrix = I
         if gate.num_qubits == 1:
             if gateindex == 0:
                 matrix = gate.matrix()
             else:
-                matrix = I
                 for i in range(0, gateindex - 1):
                     matrix = np.kron(matrix, I)
                 matrix = np.kron(matrix, gate.matrix)
             for i in range(gateindex, self.num_qubits):
                 matrix = np.kron(matrix, I)
         elif gate.num_qubits == 2:
+            GateMatrix=gate.matrix
+            matrix=np.identity(1<<self.num_qubits, dtype = Parameter.qtype)
+            for column in range(0,1<<self.num_qubits):
+                for row in range(0,1<<self.num_qubits):
+                    i=qubit_indices[0]
+                    j=qubit_indices[1]
+                    '''
+                    If the bit-status between column and row in any of the 
+                    position except i,j are different, Matrix[row][column] must 
+                    be 0. This can be done by using == operator after we mask i,j th
+                    qubit 
+                    '''
+                    maskint=~(1<<(self.num_qubits-i-1)+1<<(self.num_qubits-j-1))
+                    if (row & maskint)!= (column & maskint):
+                        matrix[row][column]=0
+                        continue
+                    '''
+                    When all bit states except qubit i,j are the same. We 
+                    should further determine which element from the gate matrix
+                    should we put here.
+                    The element to be put in matrix[row][column] should be:
+                    <ki_l kj_l | GateMatrix |ki_r kj_r>
+                    Which is simply
+                                  GateMatrix_{ki_l kj_l, ki_r kj_r}
+                    '''
+                    ki_l=self.bitstatus(i,row)
+                    kj_l=self.bitstatus(j,row)
+                    GateRowIndex=ki_l<<1+kj_l
+                    ki_r=self.bitstatus(i,column)
+                    kj_r=self.bitstatus(j,column)
+                    GateColIndex=ki_r<<1+kj_r
+                    matrix[row][column]=GateMatrix[GateRowIndex][GateColIndex]
             '''
             TODO: Two or three qubit gates
             '''
@@ -178,7 +229,7 @@ class NumpyCircuit(QuantumCircuit):
             self.compute()
         if len(statestr) != self.num_qubits:
             raise ValueError("Qubit number does not match in the measurement!")
-        return np.complex128(abs(self.state.state_vector[int(statestr, 2)])**2)
+        return np.complex128(abs(self.state.state_vector[int(statestr, 2)]) ** 2)
 
     def visulize(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement visulize method.")
