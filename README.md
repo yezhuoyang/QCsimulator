@@ -33,7 +33,7 @@ In the first step, we need to implement a simple circuit simulator using Numpy.
 - [x] Toffoli
 - [x] Fredkin
 - [x] Rx(\theta),Ry(\theta),Rz(\theta)
-- [ ] Single qubit gate act on single qubit state
+- [x] Single qubit gate act on single qubit state
 
 # Practice Cuda
 
@@ -44,16 +44,16 @@ In the first step, we need to implement a simple circuit simulator using Numpy.
 After we have implemented 
 
 
-- [ ] Quantum State class
-- [ ] Tensor Product
-- [ ] Measurement
-
+- [x] Quantum State class
+- [x] Tensor Product
+- [x] Measurement
+- [ ] Two/Three qubit gates
 
 # Multi-qubits Simulation
 
 - [ ] QuantumCircuit Class
 - [ ] Tensor Product of Gates/States
-- [ ] Measurement
+- [x] Measurement
 
 
 # TestCode for circuit
