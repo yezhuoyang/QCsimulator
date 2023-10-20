@@ -12,6 +12,11 @@ I wish we could support the fastest qubit simulation to support the future quant
 https://realpython.com/python-type-checking/
 
 
+# Convention
+
+1. The qubit index is counted from left to right.
+   For example, when we are using an integer 0b1101 to denote a 4 qubit state, the first qubit is 1, the second qubit is 1, and the third qubit is zero
+
 
 
 
@@ -51,8 +56,8 @@ After we have implemented
 
 # Multi-qubits Simulation
 
-- [ ] QuantumCircuit Class
-- [ ] Tensor Product of Gates/States
+- [x] QuantumCircuit Class
+- [x] Tensor Product of Gates/States
 - [x] Measurement
 
 
@@ -60,7 +65,7 @@ After we have implemented
 
 - [ ] Write test code that compare all single gate with qiskit
 - [ ] Writes test code that compare the running speed and storage requirement between cuircuit computation with qiskit.
-
+- [ ] Using circuit Identity to test circuit calculation.
 
 # Using Cudu and GPU to accelerate simulation
 
