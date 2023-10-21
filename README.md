@@ -84,6 +84,7 @@ After we have implemented
 # Compile to qasm and visualization
 
 - [ ] Compile to qasm
+- [ ] Load qasm assembly and simulate
 - [ ] Visualization
 - [ ] Support ZX-calculus Visulization
 
