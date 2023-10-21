@@ -173,7 +173,6 @@ class NumpyCircuit(QuantumCircuit):
             matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
             for column in range(0, 1 << self.num_qubits):
                 for row in range(0, 1 << self.num_qubits):
-                    print(column,row)
                     i = qubit_indices[0]
                     j = qubit_indices[1]
                     '''
@@ -205,9 +204,6 @@ class NumpyCircuit(QuantumCircuit):
                         print(f"ki_l:{ki_l} kj_l:{kj_l}   ki_r:{ki_r}  kj_r:{kj_r}")
                         print(gaterowindex, gatecolindex)
                     matrix[row][column] = gatematrix[gaterowindex][gatecolindex]
-            '''
-            TODO: Two or three qubit gates
-            '''
             return matrix
         elif gate.num_qubits == 3:
             gatematrix = gate.matrix()
@@ -268,7 +264,8 @@ class NumpyCircuit(QuantumCircuit):
     def _compute_step(self) -> bool:
         if self.calc_step == self.gate_num:
             return False
-        print(f"Step :{self.calc_step}")
+        if self.Debug:
+            print(f"Step :{self.calc_step}")
         '''
         Avoid repeated computation
         '''
