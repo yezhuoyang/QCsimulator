@@ -4,9 +4,25 @@ import cirq
 from cirq.contrib.qasm_import import circuit_from_qasm
 from pathlib import Path
 
+import sys
+
+sys.path.append('...')
+import Circuit
+
+
+
+
 # Import your simulate function here.
 # cs238 can be a file, a folder with an __init__.py file,
-from cs238 import simulate
+# from cs238 import simulate
+
+
+def simulate(qasm_string):
+    simulator=Circuit.NumpyCircuit(1)
+    simulator.load_qasm(qasm_string)
+    simulator.compute()
+    return simulator.state_vector()
+
 
 
 def cirq_simulate(qasm_string: str) -> list:

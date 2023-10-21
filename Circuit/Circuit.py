@@ -1,10 +1,12 @@
 import numpy as np
 
+import Gate
 import Parameter
 from Gate import *
 from Gate.Gate import QuantumGate
 from State import QuantumState
 from typing import List, Union, Any
+import re
 
 
 class QuantumCircuit:
@@ -50,8 +52,8 @@ class QuantumCircuit:
     def visulize(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement visulize method.")
 
-    def transpile_qase(self, qasmStr: str) -> NotImplementedError:
-        return NotImplementedError("Subclasses must implement transpile_qase method.")
+    def load_qasm(self, qasmStr: str) -> NotImplementedError:
+        return NotImplementedError("Subclasses must implement load_qasm method.")
 
     def to_qasm(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement to_qasm method.")
@@ -100,7 +102,11 @@ class NumpyCircuit(QuantumCircuit):
                 raise ValueError("qubit_indices for multi-qubit gate has to be a List!")
             if qubit_indices < 0 or qubit_indices >= self.num_qubits:
                 raise ValueError(f"qubit_indices {qubit_indices} out of range!")
-        if isinstance(qubit_indices, List):
+            '''
+            The step is to make sure it can be converted to tuple in the fowllowing steps.
+            '''
+            qubit_indices=[qubit_indices]
+        elif isinstance(qubit_indices, List):
             if gate.num_qubits != len(qubit_indices):
                 raise ValueError("The length of the qubit_indices list has to match with the qubit number of the gate!")
             for index in qubit_indices:
@@ -217,7 +223,7 @@ class NumpyCircuit(QuantumCircuit):
                     qubit 
                     '''
                     maskint = ~((1 << (self.num_qubits - i - 1)) + (1 << (self.num_qubits - j - 1)) + (
-                                1 << (self.num_qubits - q - 1)))
+                            1 << (self.num_qubits - q - 1)))
                     if (row & maskint) != (column & maskint):
                         matrix[row][column] = 0
                         continue
@@ -239,7 +245,7 @@ class NumpyCircuit(QuantumCircuit):
                     kj_r = self.bitstatus(j, column)
                     kq_r = self.bitstatus(q, column)
                     gatecolindex = (ki_r << 2) + (kj_r << 1) + kq_r
-                    if self.Debug and gatematrix[gaterowindex][gatecolindex]!=0:
+                    if self.Debug and gatematrix[gaterowindex][gatecolindex] != 0:
                         print(f"ki_l:{ki_l} kj_l:{kj_l} kq_l:{kq_l}  ki_r:{ki_r}  kj_r:{kj_r} kq_r:{kq_r}")
                         print(f"Element {row},{column} is set to Gate{gaterowindex}, {gatecolindex}")
                     matrix[row][column] = gatematrix[gaterowindex][gatecolindex]
@@ -297,13 +303,59 @@ class NumpyCircuit(QuantumCircuit):
     def visulize(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement visulize method.")
 
-    def transpile_qase(self, qasmStr: str) -> NotImplementedError:
-        return NotImplementedError("Subclasses must implement transpile_qase method.")
+    def load_qasm(self, qasmStr) -> None:
+        sentence_list = qasmStr.splitlines()
+        version = sentence_list[0]
+        qreg = sentence_list[2]
+        '''
+        First determine the number of qubits by
+        sentence such as qreg q[16];
+        Use regular expression to extract the number
+        '''
+        # The regular expression pattern
+        # ^ asserts start of a line
+        # \d+ matches one or more digits
+        # The parentheses ( ) capture the matched digits to a group
+        pattern = r'^qreg q\[(\d+)\];'
+        # Perform the search
+        qubit_num = int(re.match(pattern, qreg).group(1))
+        '''
+        Re-initialize the quantum state of this circuit
+        '''
+        self.__init__(qubit_num)
+        if version == "OPENQASM 2.0;":
+            for i in range(4, len(sentence_list)):
+                codelist = sentence_list[i].split(' ')
+                instruction = codelist[0]
+                registerlist = codelist[1][:-1].split(',')
+                regpattern = r'^q\[(\d+)\]'
+                match instruction:
+                    case 'cx':
+                        qubit1 = int(re.match(regpattern, registerlist[0]).group(1))
+                        qubit2 = int(re.match(regpattern, registerlist[1]).group(1))
+                        qubit_index = [qubit1, qubit2]
+                        self.add_gate(Gate.CNOT(), qubit_index)
+                    case 'h':
+                        qubit_index = int(re.match(regpattern, registerlist[0]).group(1))
+                        self.add_gate(Gate.Hadamard(), qubit_index)
+                    case 't':
+                        qubit_index = int(re.match(regpattern, registerlist[0]).group(1))
+                        self.add_gate(Gate.TGate(), qubit_index)
+                    case 'tdg':
+                        qubit_index = int(re.match(regpattern, registerlist[0]).group(1))
+                        gate = Gate.TGate()
+                        gate.dagger()
+                        self.add_gate(gate, qubit_index)
+                    case 'x':
+                        qubit_index = int(re.match(regpattern, registerlist[0]).group(1))
+                        self.add_gate(Gate.PauliX(), qubit_index)
+        return
 
-    def to_qasm(self) -> NotImplementedError:
-        return NotImplementedError("Subclasses must implement to_qasm method.")
+    def to_qasm(self) -> str:
+        return "Not"
 
-
+    def state_vector(self) -> np.ndarray:
+        return self.state.state_vector
 '''
 Quantum Circuit Class simulated by Pytorch
 '''
@@ -323,8 +375,8 @@ class PytorchCircuit(QuantumCircuit):
     def visulize(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement visulize method.")
 
-    def transpile_qase(self, qasmStr: str) -> NotImplementedError:
-        return NotImplementedError("Subclasses must implement transpile_qase method.")
+    def load_qasm(self, qasmStr: str) -> NotImplementedError:
+        return NotImplementedError("Subclasses must implement load_qasm method.")
 
     def to_qasm(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement to_qasm method.")
@@ -349,8 +401,8 @@ class GPUCircuit(QuantumCircuit):
     def visulize(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement visulize method.")
 
-    def transpile_qase(self, qasmStr: str) -> NotImplementedError:
-        return NotImplementedError("Subclasses must implement transpile_qase method.")
+    def load_qasm(self, qasmStr: str) -> NotImplementedError:
+        return NotImplementedError("Subclasses must implement load_qasm method.")
 
     def to_qasm(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement to_qasm method.")

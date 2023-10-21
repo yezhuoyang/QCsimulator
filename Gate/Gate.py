@@ -5,9 +5,16 @@ import Parameter
 class QuantumGate:
     def __init__(self, num_qubits: int) -> None:
         self.num_qubits = num_qubits
+        self._dagger = False
 
-    def matrix(self) -> np.ndarray:
+    def matrix(self) -> NotImplementedError:
         raise NotImplementedError("Subclasses must implement apply method.")
+
+    def dagger(self) -> None:
+        self._dagger = True
+
+    def qasmstr(self) -> None:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
 class Hadamard(QuantumGate):
@@ -17,7 +24,11 @@ class Hadamard(QuantumGate):
     def matrix(self) -> np.ndarray:
         # Define the Hadamard matrix for a single qubit
         hadamard = np.array([[1, 1], [1, -1]], dtype=Parameter.qtype) / np.sqrt(2)
-        return hadamard
+        return hadamard if not self._dagger else hadamard.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class PauliX(QuantumGate):
@@ -26,7 +37,10 @@ class PauliX(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         paulix = np.array([[0, 1], [1, 0]], dtype=Parameter.qtype)
-        return paulix
+        return paulix if not self._dagger else paulix.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
 class PauliY(QuantumGate):
@@ -35,7 +49,10 @@ class PauliY(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         pauliy = np.array([[0, -1j], [1j, 0]], dtype=Parameter.qtype)
-        return pauliy
+        return pauliy if not self._dagger else pauliy.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
 class PauliZ(QuantumGate):
@@ -44,7 +61,11 @@ class PauliZ(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         pauliz = np.array([[1, 0], [0, -1]], dtype=Parameter.qtype)
-        return pauliz
+        return pauliz if not self._dagger else pauliz.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class RotateX(QuantumGate):
@@ -55,7 +76,11 @@ class RotateX(QuantumGate):
     def matrix(self) -> np.ndarray:
         rotatex = np.array([[np.cos(self.theta / 2), -1j * np.sin(self.theta / 2)],
                             [-1j * np.sin(self.theta / 2), np.cos(self.theta / 2)]], dtype=Parameter.qtype)
-        return rotatex
+        return rotatex if not self._dagger else rotatex.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class RotateY(QuantumGate):
@@ -67,7 +92,11 @@ class RotateY(QuantumGate):
         rotatey = np.array(
             [[np.cos(self.theta / 2), -np.sin(self.theta / 2)], [np.sin(self.theta / 2), np.cos(self.theta / 2)]],
             dtype=Parameter.qtype)
-        return rotatey
+        return rotatey if not self._dagger else rotatey.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class RotateZ(QuantumGate):
@@ -77,7 +106,11 @@ class RotateZ(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         rotatez = np.array([[np.exp(-1j * self.theta / 2), 0], [0, np.exp(1j * self.theta / 2)]], dtype=Parameter.qtype)
-        return rotatez
+        return rotatez if not self._dagger else rotatez.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class Phase(QuantumGate):
@@ -86,7 +119,10 @@ class Phase(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         phase = np.array([[1, 0], [0, 1j]])
-        return phase
+        return phase if not self._dagger else phase.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
 class TGate(QuantumGate):
@@ -94,8 +130,11 @@ class TGate(QuantumGate):
         super().__init__(num_qubits=1)
 
     def matrix(self) -> np.ndarray:
-        T = np.array([[1, 0], [0, np.exp(1j * np.pi / 4)]], dtype=Parameter.qtype)
-        return T
+        t = np.array([[1, 0], [0, np.exp(1j * np.pi / 4)]], dtype=Parameter.qtype)
+        return t if not self._dagger else t.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
 class CNOT(QuantumGate):
@@ -104,7 +143,10 @@ class CNOT(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         cnot = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=Parameter.qtype)
-        return cnot
+        return cnot if not self._dagger else cnot.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
 class CPhase(QuantumGate):
@@ -113,7 +155,11 @@ class CPhase(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         cphase = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=Parameter.qtype)
-        return cphase
+        return cphase if not self._dagger else cphase.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class Swap(QuantumGate):
@@ -122,7 +168,11 @@ class Swap(QuantumGate):
 
     def matrix(self) -> np.ndarray:
         swap = np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=Parameter.qtype)
-        return swap
+        return swap if not self._dagger else swap.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class ControlledZ(QuantumGate):
@@ -130,8 +180,12 @@ class ControlledZ(QuantumGate):
         super().__init__(num_qubits=2)
 
     def matrix(self) -> np.ndarray:
-        controlledZ = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, -1]], dtype=Parameter.qtype)
-        return controlledZ
+        controlledz = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, -1]], dtype=Parameter.qtype)
+        return controlledz if not self._dagger else controlledz.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
 
 
 class Toffoli(QuantumGate):
@@ -144,7 +198,10 @@ class Toffoli(QuantumGate):
             [[1, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0],
              [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1], [0, 0, 0, 0, 0, 0, 1, 0]],
             dtype=Parameter.qtype)
-        return toffoli
+        return toffoli if not self._dagger else toffoli.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
 class Fredkin(QuantumGate):
@@ -157,4 +214,7 @@ class Fredkin(QuantumGate):
             [[1, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0],
              [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1]],
             dtype=Parameter.qtype)
-        return fredkin
+        return fredkin if not self._dagger else fredkin.conjugate()
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
