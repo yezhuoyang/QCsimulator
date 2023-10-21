@@ -73,6 +73,10 @@ class NumpyCircuit(QuantumCircuit):
         self.gate_num = 0
         self.calc_dict = {item: False for item in self.gate_list}
         self.calc_step = 0
+        self.Debug = False
+
+    def print_state(self) -> None:
+        self.state.show_state()
 
     '''
     Add Gate in sequence
@@ -94,12 +98,20 @@ class NumpyCircuit(QuantumCircuit):
         if isinstance(qubit_indices, int):
             if gate.num_qubits != 1:
                 raise ValueError("qubit_indices for multi-qubit gate has to be a List!")
+            if qubit_indices<0 or qubit_indices>=self.num_qubits:
+                raise ValueError(f"qubit_indices {qubit_indices} out of range!")
         if isinstance(qubit_indices, List):
             if gate.num_qubits != len(qubit_indices):
                 raise ValueError("The length of the qubit_indices list has to match with the qubit number of the gate!")
+            for index in qubit_indices:
+                if index < 0 or index >= self.num_qubits:
+                    raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")
+            '''Make sure that the qubit indices of single qubit gate be just an integer'''
+            if gate.num_qubits == 1:
+                qubit_indices = qubit_indices[0]
         self.gate_list.append((gate, qubit_indices, self.gate_num))
+        self.calc_dict[(gate, qubit_indices, self.gate_num)] = False
         self.gate_num += 1
-
 
     '''
     Given an integer state_int, return the bit status of qubit qubit_index
@@ -109,16 +121,16 @@ class NumpyCircuit(QuantumCircuit):
     left to right) has status 0, so the function will return 0. 
     TODO: How to optimize the bitstatus and matrix construction function?
     '''
-    def bitstatus(self,qubit_index: int, state_int: int):
+
+    def bitstatus(self, qubit_index: int, state_int: int):
         '''
         Before calculation, check whether the state_int and
         qubit_index is valid.
         For performance in the future, this code will be muted.
         '''
-        if qubit_index>=self.num_qubits or state_int<0 or state_int>=(1<<self.num_qubits):
+        if qubit_index >= self.num_qubits or state_int < 0 or state_int >= (1 << self.num_qubits):
             raise ValueError("qubit_index or state_int out of range!")
-        return (state_int>>(self.num_qubits-qubit_index-1))&1
-
+        return (state_int >> (self.num_qubits - qubit_index - 1)) & 1
 
     '''
     TODO:Calculate the matrix form of a gate after kron product
@@ -128,6 +140,12 @@ class NumpyCircuit(QuantumCircuit):
 
     def calc_kron(self, gateindex: int) -> np.ndarray:
         (gate, qubit_indices, index) = self.gate_list[gateindex]
+        '''
+        If the circuit has only one qubit, just return the matrix of single
+        gate
+        '''
+        if self.num_qubits == 1:
+            return gate.matrix()
         I = np.array([[1, 0], [0, 1]], dtype=Parameter.qtype)
         '''
         Matrix form for single qubit gate, we can simply use np.kron to
@@ -140,25 +158,25 @@ class NumpyCircuit(QuantumCircuit):
             else:
                 for i in range(0, gateindex - 1):
                     matrix = np.kron(matrix, I)
-                matrix = np.kron(matrix, gate.matrix)
-            for i in range(gateindex, self.num_qubits):
+                matrix = np.kron(matrix, gate.matrix())
+            for i in range(gateindex, self.num_qubits - 1):
                 matrix = np.kron(matrix, I)
         elif gate.num_qubits == 2:
-            GateMatrix=gate.matrix
-            matrix=np.identity(1<<self.num_qubits, dtype = Parameter.qtype)
-            for column in range(0,1<<self.num_qubits):
-                for row in range(0,1<<self.num_qubits):
-                    i=qubit_indices[0]
-                    j=qubit_indices[1]
+            GateMatrix = gate.matrix()
+            matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
+            for column in range(0, 1 << self.num_qubits):
+                for row in range(0, 1 << self.num_qubits):
+                    i = qubit_indices[0]
+                    j = qubit_indices[1]
                     '''
                     If the bit-status between column and row in any of the 
                     position except i,j are different, Matrix[row][column] must 
                     be 0. This can be done by using == operator after we mask i,j th
                     qubit 
                     '''
-                    maskint=~(1<<(self.num_qubits-i-1)+1<<(self.num_qubits-j-1))
-                    if (row & maskint)!= (column & maskint):
-                        matrix[row][column]=0
+                    maskint = ~(1 << (self.num_qubits - i - 1) + 1 << (self.num_qubits - j - 1))
+                    if (row & maskint) != (column & maskint):
+                        matrix[row][column] = 0
                         continue
                     '''
                     When all bit states except qubit i,j are the same. We 
@@ -169,13 +187,13 @@ class NumpyCircuit(QuantumCircuit):
                     Which is simply
                                   GateMatrix_{ki_l kj_l, ki_r kj_r}
                     '''
-                    ki_l=self.bitstatus(i,row)
-                    kj_l=self.bitstatus(j,row)
-                    GateRowIndex=ki_l<<1+kj_l
-                    ki_r=self.bitstatus(i,column)
-                    kj_r=self.bitstatus(j,column)
-                    GateColIndex=ki_r<<1+kj_r
-                    matrix[row][column]=GateMatrix[GateRowIndex][GateColIndex]
+                    ki_l = self.bitstatus(i, row)
+                    kj_l = self.bitstatus(j, row)
+                    gaterowindex = ki_l << 1 + kj_l
+                    ki_r = self.bitstatus(i, column)
+                    kj_r = self.bitstatus(j, column)
+                    gatecolindex = ki_r << 1 + kj_r
+                    matrix[row][column] = GateMatrix[gaterowindex][gatecolindex]
             '''
             TODO: Two or three qubit gates
             '''
@@ -208,7 +226,9 @@ class NumpyCircuit(QuantumCircuit):
         First get the whole matrix after doing kron product
         '''
         matrix = self.calc_kron(self.calc_step)
-        self.state = np.matmul(matrix, self.state)
+        if self.Debug:
+            print(f"The {self.calc_step} step of calculation, the matrix is \n {matrix}")
+        self.state.reset_state(np.matmul(matrix, self.state.state_vector))
         self.calc_dict[self.gate_list[self.calc_step]] = True
         self.calc_step += 1
         return True
