@@ -90,7 +90,7 @@ class Phase(QuantumGate):
 
 
 class TGate(QuantumGate):
-    def __init__(self, num_qubits) -> None:
+    def __init__(self) -> None:
         super().__init__(num_qubits=1)
 
     def matrix(self) -> np.ndarray:
@@ -136,7 +136,7 @@ class ControlledZ(QuantumGate):
 
 class Toffoli(QuantumGate):
 
-    def __init__(self, num_qubits: int) -> None:
+    def __init__(self) -> None:
         super().__init__(num_qubits=3)
 
     def matrix(self) -> np.ndarray:
@@ -149,7 +149,7 @@ class Toffoli(QuantumGate):
 
 class Fredkin(QuantumGate):
 
-    def __init__(self, num_qubits: int) -> None:
+    def __init__(self) -> None:
         super().__init__(num_qubits=3)
 
     def matrix(self) -> np.ndarray:

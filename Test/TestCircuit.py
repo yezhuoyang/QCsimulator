@@ -3,11 +3,10 @@ import sys
 sys.path.append('..')
 import Circuit
 import Gate
-
-C = Circuit.NumpyCircuit(1)
+'''
+C = Circuit.NumpyCircuit(2)
 C.Debug = True
-C.add_gate(Gate.Hadamard(), 0)
-C.add_gate(Gate.Hadamard(), 0)
+C.add_gate(Gate.CNOT(), [1, 0])
 C.compute()
 C.print_state()
 
@@ -19,6 +18,11 @@ D.add_gate(Gate.Hadamard(), 2)
 D.add_gate(Gate.Hadamard(), 3)
 D.compute()
 D.print_state()
+'''
 
 
-
+C = Circuit.NumpyCircuit(3)
+C.Debug = True
+C.add_gate(Gate.Toffoli(), [0,1,2])
+C.compute()
+C.print_state()
