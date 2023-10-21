@@ -84,7 +84,7 @@ After we have implemented
 # Compile to qasm and visualization
 
 - [ ] Compile to qasm 2.0
-- [ ] Load qasm 2.0 assembly and simulate
+- [x] Load qasm 2.0 assembly and simulate
 - [ ] Compile to qasm 3.0
 - [ ] Load qasm 3.0 assembly and simulate
 - [ ] Visualization
