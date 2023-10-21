@@ -10,19 +10,16 @@ sys.path.append('...')
 import Circuit
 
 
-
-
 # Import your simulate function here.
 # cs238 can be a file, a folder with an __init__.py file,
 # from cs238 import simulate
 
 
-def simulate(qasm_string):
-    simulator=Circuit.NumpyCircuit(1)
+def simulate(qasm_string) -> np.ndarray:
+    simulator = Circuit.NumpyCircuit(1)
     simulator.load_qasm(qasm_string)
     simulator.compute()
     return simulator.state_vector()
-
 
 
 def cirq_simulate(qasm_string: str) -> list:
@@ -59,7 +56,7 @@ def compare(state_vector, cirq_state_vector):
 
 
 # get the directory of qasm files and make sure it's a directory
-qasm_dir = Path(sys.argv[1])
+qasm_dir = Path("C:/Users/yezhu/PycharmProjects/QCsimulator/Test/naiveqasm")
 assert qasm_dir.is_dir()
 
 # iterate the qasm files in the directory

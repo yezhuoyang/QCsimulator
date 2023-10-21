@@ -47,7 +47,7 @@ class QuantumState:
         if 2 ** self.qubit_number != state_vector.shape[0]:
             raise ValueError("Qubit number doesn't match the shape of the state vector")
         self.state_vector = state_vector
-        self.normalize()
+        #self.normalize()
 
     def normalize(self) -> None:
         norm = np.sqrt(sum([abs(x) ** 2 for x in self.state_vector]))
