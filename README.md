@@ -52,7 +52,7 @@ After we have implemented
 - [x] Quantum State class
 - [x] Tensor Product
 - [x] Measurement
-- [ ] Two/Three qubit gates
+- [x] Two/Three qubit gates
 
 # Multi-qubits Simulation
 
