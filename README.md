@@ -103,6 +103,32 @@ circuit.measureAll("0011")
 - [ ] Visualization
 - [ ] Support ZX-calculus Visulization
 
+Here is a qasm 2.0 code example
+```
+OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[8];
+creg c[8];
+h q[0];
+h q[1];
+h q[2];
+h q[3];
+h q[4];
+h q[5];
+h q[6];
+h q[7];
+```
+We can load and simulate the above qasm 2.0 by calling the load_qasm method of quantum circuit
+
+```python
+import Circuit
+simulator = Circuit.NumpyCircuit(8)
+simulator.load_qasm(qasm_string)
+simulator.compute()
+print(simulator.state_vector())
+```
+
+
 ## Density Matrix and Quantum Noise
 
 
@@ -119,6 +145,8 @@ circuit.measureAll("0011")
 
 
 
-
+# Contact
+I'm currently a Master student in UCLA studying quantum computation [MQST webpage](https://qst.ucla.edu/). I'm especially interested in quantum architecure and quantum algorithm and I'm looking for a PHD position in this year.
+My email address is yezhuoyang98@g.ucla.edu
 
 
