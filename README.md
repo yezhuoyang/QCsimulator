@@ -1,30 +1,30 @@
 # QCsimulator
 
-The quantum circuit simulator that use GPU/parrallel computation to accerate the simulation speed.
+The quantum circuit simulator written in python that aims to use GPU/parrallel computation to accerate the simulation speed.
 I wish we could support the fastest qubit simulation to support the future quantum algorithm design and analysis!
 
 
 
 
-
-# Type Checking Should be strictly followed! 
-
-https://realpython.com/python-type-checking/
+# Rules of developing and Conventions
 
 
-# Convention
+1.Every function should obey the type checking rules [Blog of Type Checking for Python](https://realpython.com/python-type-checking/)
 
-1. The qubit index is counted from left to right.
+
+
+2. The qubit index is counted from left to right.
    For example, when we are using an integer 0b1101 to denote a 4 qubit state, the first qubit is 1, the second qubit is 1, and the third qubit is zero
 
 
+# Plans for development
 
-
+```bash
 py -m mypy .\State\State.py
+```
 
-# A basic two qubit gate simulator:
 
-In the first step, we need to implement a simple circuit simulator using Numpy.
+## Gate, State and Circuit
 
 
 - [x] Quantum Gate Class
@@ -39,49 +39,44 @@ In the first step, we need to implement a simple circuit simulator using Numpy.
 - [x] Fredkin
 - [x] Rx(\theta),Ry(\theta),Rz(\theta)
 - [x] Single qubit gate act on single qubit state
+- [x] Quantum State class
 
-# Practice Cuda
-
-- [ ] Use cuda to calculate the Single qubit gate operation
-
-
-# Tensor Product and Measurement
+## Tensor Product and Measurement
 After we have implemented 
 
 
-- [x] Quantum State class
+
 - [x] Tensor Product
 - [x] Measurement
 - [x] Two/Three qubit gates
 
-# Multi-qubits Simulation
+Multi-qubits Simulation
 
 - [x] QuantumCircuit Class
 - [x] Tensor Product of Gates/States
 - [x] Measurement
 
 
-# TestCode for circuit
+## TestCode
 
 - [ ] Write test code that compare all single gate with qiskit
 - [ ] Writes test code that compare the running speed and storage requirement between cuircuit computation with qiskit.
 - [ ] Using circuit Identity to test circuit calculation.
 
-# Using Cudu and GPU to accelerate simulation
+## Algorithm
 
+- [ ] Deutsch's algorithm
+- [ ] Grover's algorithm
+- [ ] QFFT
+- [ ] Shor's algorithm
+- [ ] HHL algorithm
+- [ ] Design Parameter Circuit class
+- [ ] Gradient Calculation
+- [ ] BackPropagation
+- [ ] QAOA algorithm
+- [ ] VQE algorithm
 
-
-# Using Parallel Computation to accelerate simulation
-
-
-
-
-# Using TensorNetwork Contraction to accelerate simulation
-
-
-
-
-# Compile to qasm and visualization
+## Compatibility
 
 - [ ] Compile to qasm 2.0
 - [x] Load qasm 2.0 assembly and simulate
@@ -90,62 +85,17 @@ After we have implemented
 - [ ] Visualization
 - [ ] Support ZX-calculus Visulization
 
+## Density Matrix and Quantum Noise
 
-# Algorithms implementation
-
-- [ ] Deutsch's algorithm
-- [ ] Grover's algorithm
-- [ ] QFFT
-- [ ] Shor's algorithm
-- [ ] HHL algorithm
-
-
-# Quantum Optimization Algorithm
-
-- [ ] Design Parameter Circuit class
-- [ ] Gradient Calculation
-- [ ] BackPropagation
-- [ ] QAOA algorithm
-- [ ] VQE algorithm
-
-
-
-# Quantum Cryptography
-
-- [ ] QKD
-
-
-
-# Testcode for Algorithm
-- [ ] TestCode for Deutsch
-- [ ] TestCode for Grover
-- [ ] TestCode for QFFT
-- [ ] TestCode for Shor
-- [ ] TestCode for QAOA
-- [ ] TestCode for VQE
-
-
-
-
-# Frontend website
-- [ ] Write a frontend website for demonstration
-- [ ] Wirte documentation
-
-
-# Density Matrix
 
 - [ ] Density Matrix Class
-
-
-
-# Quantum noise
-
+- [ ] Quantum Noise Class
 - [ ] Bitflip Noise
 - [ ] Decoherence Noise
 
 
 
-# Error Correction Code
+## Error Correction Code
 
 
 - [ ] Stabilizer Codes
