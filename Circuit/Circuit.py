@@ -105,7 +105,7 @@ class NumpyCircuit(QuantumCircuit):
             '''
             The step is to make sure it can be converted to tuple in the fowllowing steps.
             '''
-            qubit_indices=[qubit_indices]
+            qubit_indices = [qubit_indices]
         elif isinstance(qubit_indices, List):
             if gate.num_qubits != len(qubit_indices):
                 raise ValueError("The length of the qubit_indices list has to match with the qubit number of the gate!")
@@ -159,7 +159,7 @@ class NumpyCircuit(QuantumCircuit):
         '''
         matrix = I
         if gate.num_qubits == 1:
-            qubit_index=qubit_indices[0]
+            qubit_index = qubit_indices[0]
             if qubit_index == 0:
                 matrix = gate.matrix()
             else:
@@ -356,6 +356,8 @@ class NumpyCircuit(QuantumCircuit):
 
     def state_vector(self) -> np.ndarray:
         return self.state.state_vector
+
+
 '''
 Quantum Circuit Class simulated by Pytorch
 '''
