@@ -1,8 +1,7 @@
 # QCsimulator
 
 The quantum circuit simulator written in python that aims to use GPU/parrallel computation to accerate the simulation speed.
-I wish we could support the fastest qubit simulation to support the future quantum algorithm design and analysis!
-
+I wish we could support the fastest qubit simulation to support the future quantum algorithm/architecture design and analysis!
 
 
 
@@ -12,16 +11,16 @@ I wish we could support the fastest qubit simulation to support the future quant
 1.Every function should obey the type checking rules [Blog of Type Checking for Python](https://realpython.com/python-type-checking/)
 
 
+```bash
+py -m mypy filetobecheck.py
+```
+
 
 2. The qubit index is counted from left to right.
-   For example, when we are using an integer 0b1101 to denote a 4 qubit state, the first qubit is 1, the second qubit is 1, and the third qubit is zero
+   For example, when we are using an integer 0b1101 to denote a 4 qubit state, the first qubit is 1, the second qubit is 1, and the third qubit is zero.
+   It should be pointout that
 
-
-# Plans for development
-
-```bash
-py -m mypy .\State\State.py
-```
+# Plans and Goals for developing
 
 
 ## Gate, State and Circuit
@@ -40,26 +39,45 @@ py -m mypy .\State\State.py
 - [x] Rx(\theta),Ry(\theta),Rz(\theta)
 - [x] Single qubit gate act on single qubit state
 - [x] Quantum State class
+- [x] Quantum Circuit class
+
+Here is an example code of creating a QuantumCircuit class and add some gates to it.
+```python
+import Circuit
+import Gate
+circuit = Circuit.NumpyCircuit(2)
+circuit.add_gate(Gate.CNOT(), [1, 0])
+circuit.add_gate(Gate.Hadamard(), [1])
+```
+
+
 
 ## Tensor Product and Measurement
-After we have implemented 
-
-
 
 - [x] Tensor Product
 - [x] Measurement
 - [x] Two/Three qubit gates
-
-Multi-qubits Simulation
-
 - [x] QuantumCircuit Class
 - [x] Tensor Product of Gates/States
 - [x] Measurement
 
+Here is another example code of creating a QuantumCircuit class, add some gates to it, do the computation and measurement.
+
+```python
+import Circuit
+circuit = Circuit.NumpyCircuit(4)
+circuit.add_gate(Gate.Hadamard(), 0)
+circuit.add_gate(Gate.Hadamard(), 1)
+circuit.add_gate(Gate.Hadamard(), 2)
+circuit.add_gate(Gate.Hadamard(), 3)
+circuit.compute()
+circuit.measureAll("0011")
+```
+
 
 ## TestCode
 
-- [ ] Write test code that compare all single gate with qiskit
+- [x] Write test code that compare state vector result with qiskit
 - [ ] Writes test code that compare the running speed and storage requirement between cuircuit computation with qiskit.
 - [ ] Using circuit Identity to test circuit calculation.
 
@@ -93,10 +111,7 @@ Multi-qubits Simulation
 - [ ] Bitflip Noise
 - [ ] Decoherence Noise
 
-
-
 ## Error Correction Code
-
 
 - [ ] Stabilizer Codes
 - [ ] Surface Code
