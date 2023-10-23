@@ -143,7 +143,8 @@ print(simulator.state_vector())
 - [ ] Surface Code
 - [ ] LDPC Code
 
-
+## Pulse Simulation
+Given a physical qubit model driven by pulse, automatically generate all pulse sequence
 
 # Contact
 I'm currently a Master student in UCLA studying quantum computation [MQST webpage](https://qst.ucla.edu/). I'm especially interested in quantum architecure and quantum algorithm and I'm looking for a PHD position in this year.
