@@ -91,7 +91,8 @@ class NumpyCircuit(QuantumCircuit):
         :param gate: A quantum gate, for example: Hadmard
         :param qubit_indices: The indices of qubit that the gate act on, for example
         If the hardmard is acted on the third qubit, it should be [3]
-        If teh CNOT gate acted on the forth and fifth qubits, it should be [4,5]
+        If the CNOT gate acted on the forth and fifth qubits, it should be [4,5]
+        If the multi controlled Z gate, controlled by the first and second qubit, add on the fifth qubit, it should be [[1,2],5]
         :return:
         '''
         '''
@@ -107,11 +108,23 @@ class NumpyCircuit(QuantumCircuit):
             '''
             qubit_indices = [qubit_indices]
         elif isinstance(qubit_indices, List):
-            if gate.num_qubits != len(qubit_indices):
-                raise ValueError("The length of the qubit_indices list has to match with the qubit number of the gate!")
-            for index in qubit_indices:
-                if index < 0 or index >= self.num_qubits:
-                    raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")
+            if isinstance(gate,MultiControlX):
+                if not isinstance(qubit_indices[0],List):
+                    raise ValueError("The first element of qubit_indices for multi control qubit gate has to be a List!")
+                if not len(qubit_indices[0])==(gate.num_qubits-1):
+                    raise ValueError("The qubit number of multi control qubit doesn't match with the qubit_indices")
+                for index in qubit_indices[0]:
+                    if index < 0 or index >= self.num_qubits:
+                        raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")               
+                    if qubit_indices[1]<0 or qubit_indices[1]>self.num_qubits:
+                        raise ValueError(f"{qubit_indices[1]} in qubit_indices {qubit_indices} out of range!")                                      
+                qubit_indices[0]=tuple(qubit_indices[0])
+            else:
+                if gate.num_qubits != len(qubit_indices):
+                    raise ValueError("The length of the qubit_indices list has to match with the qubit number of the gate!")
+                for index in qubit_indices:
+                    if index < 0 or index >= self.num_qubits:
+                        raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")
             '''Make sure that the qubit indices of single qubit gate be just an integer'''
             if gate.num_qubits == 1:
                 qubit_indices = qubit_indices[0]
@@ -205,48 +218,87 @@ class NumpyCircuit(QuantumCircuit):
                         print(gaterowindex, gatecolindex)
                     matrix[row][column] = gatematrix[gaterowindex][gatecolindex]
             return matrix
-        elif gate.num_qubits == 3:
-            gatematrix = gate.matrix()
-            matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
-            for column in range(0, 1 << self.num_qubits):
-                for row in range(0, 1 << self.num_qubits):
-                    i = qubit_indices[0]
-                    j = qubit_indices[1]
-                    q = qubit_indices[2]
-                    '''
-                    Just the same as two qubit gate case 
-                    If the bit-status between column and row in any of the 
-                    position except i,j,q are different, Matrix[row][column] must 
-                    be 0. This can be done by using == operator after we mask i,j,q th
-                    qubit 
-                    '''
-                    maskint = ~((1 << (self.num_qubits - i - 1)) + (1 << (self.num_qubits - j - 1)) + (
-                            1 << (self.num_qubits - q - 1)))
-                    if (row & maskint) != (column & maskint):
-                        matrix[row][column] = 0
-                        continue
-                    '''
-                    Just the same as two qubit gate
-                    When all bit states except qubit i,j,q are the same. We 
-                    should further determine which element from the gate matrix
-                    should we put here.
-                    The element to be put in matrix[row][column] should be:
-                    <ki_l kj_l kq_l | GateMatrix |ki_r kj_r kq_r>
-                    Which is simply
-                                  GateMatrix_{ki_l kj_l kq_l, ki_r kj_r kq_r}
-                    '''
-                    ki_l = self.bitstatus(i, row)
-                    kj_l = self.bitstatus(j, row)
-                    kq_l = self.bitstatus(q, row)
-                    gaterowindex = (ki_l << 2) + (kj_l << 1) + kq_l
-                    ki_r = self.bitstatus(i, column)
-                    kj_r = self.bitstatus(j, column)
-                    kq_r = self.bitstatus(q, column)
-                    gatecolindex = (ki_r << 2) + (kj_r << 1) + kq_r
-                    if self.Debug and gatematrix[gaterowindex][gatecolindex] != 0:
-                        print(f"ki_l:{ki_l} kj_l:{kj_l} kq_l:{kq_l}  ki_r:{ki_r}  kj_r:{kj_r} kq_r:{kq_r}")
-                        print(f"Element {row},{column} is set to Gate{gaterowindex}, {gatecolindex}")
-                    matrix[row][column] = gatematrix[gaterowindex][gatecolindex]
+        elif gate.num_qubits >= 3:
+            '''
+            The construction process is different between normal gate with multiControlX
+            '''
+            if not isinstance(gate,MultiControlX):
+                gatematrix = gate.matrix()
+                matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
+                for column in range(0, 1 << self.num_qubits):
+                    for row in range(0, 1 << self.num_qubits):
+                        i = qubit_indices[0]
+                        j = qubit_indices[1]
+                        q = qubit_indices[2]
+                        '''
+                        Just the same as two qubit gate case 
+                        If the bit-status between column and row in any of the 
+                        position except i,j,q are different, Matrix[row][column] must 
+                        be 0. This can be done by using == operator after we mask i,j,q th
+                        qubit 
+                        '''
+                        maskint = ~((1 << (self.num_qubits - i - 1)) + (1 << (self.num_qubits - j - 1)) + (
+                                1 << (self.num_qubits - q - 1)))
+                        if (row & maskint) != (column & maskint):
+                            matrix[row][column] = 0
+                            continue
+                        '''
+                        Just the same as two qubit gate
+                        When all bit states except qubit i,j,q are the same. We 
+                        should further determine which element from the gate matrix
+                        should we put here.
+                        The element to be put in matrix[row][column] should be:
+                        <ki_l kj_l kq_l | GateMatrix |ki_r kj_r kq_r>
+                        Which is simply
+                                    GateMatrix_{ki_l kj_l kq_l, ki_r kj_r kq_r}
+                        '''
+                        ki_l = self.bitstatus(i, row)
+                        kj_l = self.bitstatus(j, row)
+                        kq_l = self.bitstatus(q, row)
+                        gaterowindex = (ki_l << 2) + (kj_l << 1) + kq_l
+                        ki_r = self.bitstatus(i, column)
+                        kj_r = self.bitstatus(j, column)
+                        kq_r = self.bitstatus(q, column)
+                        gatecolindex = (ki_r << 2) + (kj_r << 1) + kq_r
+                        if self.Debug and gatematrix[gaterowindex][gatecolindex] != 0:
+                            print(f"ki_l:{ki_l} kj_l:{kj_l} kq_l:{kq_l}  ki_r:{ki_r}  kj_r:{kj_r} kq_r:{kq_r}")
+                            print(f"Element {row},{column} is set to Gate{gaterowindex}, {gatecolindex}")
+                        matrix[row][column] = gatematrix[gaterowindex][gatecolindex]
+            else:
+                '''
+                When the gate is a multiControlled X
+                We should check weather the controlled condition is satisfied 
+                before we set the matrix element to 1
+                '''
+                controll_indices=qubit_indices[0]
+                act_index=qubit_indices[1]
+                act_condition=gate.act_condition
+                matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
+                for column in range(0, 1 << self.num_qubits):
+                    for row in range(0, 1 << self.num_qubits): 
+                        '''
+                        All 0,1 element must be the same except the controll qubit and the act qubit
+                        '''               
+                        maskint=(1<<(self.num_qubits-act_index-1))
+                        for controll_index in controll_indices:
+                            maskint=maskint+(1<<(self.num_qubits-controll_index-1))    
+                        maskint = ~maskint
+                        if (row & maskint) != (column & maskint):
+                            matrix[row][column] = 0
+                            continue
+                        checkControll=True
+                        for i in len(controll_indices):
+                            
+                            if self.bitstatus(controll_indices[i],column)!=act_condition[controll_index]:
+                                matrix[row][column]=0
+                                checkControll=False
+                                break
+                        if(checkControll==False):
+                            continue    
+                        if self.bitstatus(act_index,column)!=((self.bitstatus(act_index,row)+1)%2):
+                            matrix[row][column]=0                        
+                            continue   
+                        matrix[row][column]=1     
         return matrix
 
     def compute(self) -> None:
