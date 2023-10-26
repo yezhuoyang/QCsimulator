@@ -64,5 +64,24 @@ class QuantumState:
         tensor_product_vector = np.kron(self.state_vector, other_state.state_vector)
         return QuantumState(np.array(tensor_product_vector, dtype=Parameter.qtype),qubit_number=self.qubit_number+other_state.qubit_number)
 
+
+    '''
+    Print the dirac notation of the state
+    '''
+    def show_state_dirac(self)->None:
+        Dirac_string=""
+        for i in range(1<<self.qubit_number):
+            if self.state_vector[i]!=0:
+                '''
+                If the length of Dirac_string is not 0, Should also add a plus sign
+                '''
+                if len(Dirac_string)>0:
+                    Dirac_string+="+"
+                bitstring=bin(i)[2:].zfill(self.qubit_number)
+                Dirac_string+=f"{self.state_vector[i]}|{bitstring}>"
+        print(Dirac_string)
+
+
+
     def show_state(self) -> None:
         print(self.state_vector)
