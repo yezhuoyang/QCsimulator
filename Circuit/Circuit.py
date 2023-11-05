@@ -72,6 +72,13 @@ class NumpyCircuit(QuantumCircuit):
         '''
         self.state = QuantumState(qubit_number=num_qubits)
         self.gate_list = []
+        '''
+        The optimized calculation sequence, which should be a list of gate list
+        For example:
+              self.calc_sequence=[[Hadmard(0),Hadamard(1)],[CNOT(0,1)],[Hadmard(0),Hadamard(1)]]
+              The calc_sequence can be optimized by the optimizer class before the actual calculation
+        '''
+        self.calc_sequence = []
         self.gate_num = 0
         self.calc_dict = {item: False for item in self.gate_list}
         self.calc_step = 0
@@ -108,20 +115,22 @@ class NumpyCircuit(QuantumCircuit):
             '''
             qubit_indices = [qubit_indices]
         elif isinstance(qubit_indices, List):
-            if isinstance(gate,MultiControlX):
-                if not isinstance(qubit_indices[0],List):
-                    raise ValueError("The first element of qubit_indices for multi control qubit gate has to be a List!")
-                if not len(qubit_indices[0])==(gate.num_qubits-1):
+            if isinstance(gate, MultiControlX):
+                if not isinstance(qubit_indices[0], List):
+                    raise ValueError(
+                        "The first element of qubit_indices for multi control qubit gate has to be a List!")
+                if not len(qubit_indices[0]) == (gate.num_qubits - 1):
                     raise ValueError("The qubit number of multi control qubit doesn't match with the qubit_indices")
                 for index in qubit_indices[0]:
                     if index < 0 or index >= self.num_qubits:
-                        raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")               
-                    if qubit_indices[1]<0 or qubit_indices[1]>self.num_qubits:
-                        raise ValueError(f"{qubit_indices[1]} in qubit_indices {qubit_indices} out of range!")                                      
-                qubit_indices[0]=tuple(qubit_indices[0])
+                        raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")
+                    if qubit_indices[1] < 0 or qubit_indices[1] > self.num_qubits:
+                        raise ValueError(f"{qubit_indices[1]} in qubit_indices {qubit_indices} out of range!")
+                qubit_indices[0] = tuple(qubit_indices[0])
             else:
                 if gate.num_qubits != len(qubit_indices):
-                    raise ValueError("The length of the qubit_indices list has to match with the qubit number of the gate!")
+                    raise ValueError(
+                        "The length of the qubit_indices list has to match with the qubit number of the gate!")
                 for index in qubit_indices:
                     if index < 0 or index >= self.num_qubits:
                         raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")
@@ -130,6 +139,7 @@ class NumpyCircuit(QuantumCircuit):
                 qubit_indices = qubit_indices[0]
         self.gate_list.append((gate, tuple(qubit_indices), self.gate_num))
         self.calc_dict[(gate, tuple(qubit_indices), self.gate_num)] = False
+        self.calc_sequence.append([(gate, tuple(qubit_indices), self.gate_num)])
         self.gate_num += 1
 
     '''
@@ -152,13 +162,26 @@ class NumpyCircuit(QuantumCircuit):
         return (state_int >> (self.num_qubits - qubit_index - 1)) & 1
 
     '''
-    TODO:Calculate the matrix form of a gate after kron product
-    This part is the most difficult because for a 2-qubit gates,
-    we have to swap two index together before we can do simple kroneck product
+    Given a quantum gate on single qubit, expand the whole matrix
     '''
 
-    def calc_kron(self, gateindex: int) -> np.ndarray:
-        (gate, qubit_indices, index) = self.gate_list[gateindex]
+    def expand_kron_single(self, gate: QuantumGate, qubit_indices: List) -> np.ndarray:
+        '''
+        All hadamard gate.
+        Assume that there are n qubits,
+        Ignore the 1/sqrt{2^n} factor, H^n[i][j]=-1 only when i,j are both odd, otherwise H^n[i][j]=1
+        '''
+        if isinstance(gate, AllHadamard):
+            N = 2 ** gate.num_qubits
+            matrix = np.ones((N, N), dtype=Parameter.qtype)
+            '''
+            Change all element with odd index pair to -1
+            '''
+            maxk=int((N-2)/2)+1
+            for i in range(0,maxk):
+                for j in range(0,maxk):
+                    matrix[2 * i + 1][2 * j + 1] = -1
+            return matrix / np.sqrt(N)
         '''
         If the circuit has only one qubit, just return the matrix of single
         gate
@@ -222,7 +245,7 @@ class NumpyCircuit(QuantumCircuit):
             '''
             The construction process is different between normal gate with multiControlX
             '''
-            if not isinstance(gate,MultiControlX):
+            if not isinstance(gate, MultiControlX):
                 gatematrix = gate.matrix()
                 matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
                 for column in range(0, 1 << self.num_qubits):
@@ -269,37 +292,47 @@ class NumpyCircuit(QuantumCircuit):
                 When the gate is a multiControlled X
                 We should check weather the controlled condition is satisfied 
                 before we set the matrix element to 1
+                For example, when the control
+                
+                
                 '''
-                controll_indices=qubit_indices[0]
-                act_index=qubit_indices[1]
-                act_condition=gate.act_condition
+                control_indices = qubit_indices[0]
+                act_index = qubit_indices[1]
+                act_condition = gate.act_condition
                 matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
                 for column in range(0, 1 << self.num_qubits):
-                    for row in range(0, 1 << self.num_qubits): 
+                    for row in range(0, 1 << self.num_qubits):
                         '''
                         All 0,1 element must be the same except the controll qubit and the act qubit
-                        '''               
-                        maskint=(1<<(self.num_qubits-act_index-1))
-                        for controll_index in controll_indices:
-                            maskint=maskint+(1<<(self.num_qubits-controll_index-1))    
+                        '''
+                        maskint = (1 << (self.num_qubits - act_index - 1))
+                        for control_index in control_indices:
+                            maskint = maskint + (1 << (self.num_qubits - control_index - 1))
                         maskint = ~maskint
                         if (row & maskint) != (column & maskint):
                             matrix[row][column] = 0
                             continue
-                        checkControll=True
-                        for i in len(controll_indices):
-                            
-                            if self.bitstatus(controll_indices[i],column)!=act_condition[controll_index]:
-                                matrix[row][column]=0
-                                checkControll=False
+                        checkControl = True
+                        for i in len(control_indices):
+
+                            if self.bitstatus(control_indices[i], column) != act_condition[control_index]:
+                                matrix[row][column] = 0
+                                checkControl = False
                                 break
-                        if(checkControll==False):
-                            continue    
-                        if self.bitstatus(act_index,column)!=((self.bitstatus(act_index,row)+1)%2):
-                            matrix[row][column]=0                        
-                            continue   
-                        matrix[row][column]=1     
+                        if checkControl == False:
+                            continue
+                        if self.bitstatus(act_index, column) != ((self.bitstatus(act_index, row) + 1) % 2):
+                            matrix[row][column] = 0
+                            continue
+                        matrix[row][column] = 1
         return matrix
+
+    '''
+    Give a list of gates in a column, expand them to the whole matrix
+    '''
+
+    def expand_kron_multi(self, gatelist: List) -> np.ndarray:
+        return np.array([0,0])
 
     def compute(self) -> None:
         while self._compute_step():
@@ -314,7 +347,7 @@ class NumpyCircuit(QuantumCircuit):
     '''
 
     def _compute_step(self) -> bool:
-        if self.calc_step == self.gate_num:
+        if self.calc_step == len(self.calc_sequence):
             return False
         if self.Debug:
             print(f"Step :{self.calc_step}")
@@ -326,7 +359,11 @@ class NumpyCircuit(QuantumCircuit):
         '''
         First get the whole matrix after doing kron product
         '''
-        matrix = self.calc_kron(self.calc_step)
+        if len(self.calc_sequence[self.calc_step]) == 1:
+            (gate, qubit_indices, index) = self.calc_sequence[self.calc_step][0]
+            matrix = self.expand_kron_single(gate, qubit_indices)
+        else:
+            matrix = self.expand_kron_multi(self.calc_sequence[self.calc_step])
         if self.Debug:
             print(f"The {self.calc_step} step of calculation, the matrix is \n {matrix}")
         self.state.reset_state(np.matmul(matrix, self.state.state_vector))

@@ -8,6 +8,7 @@ from State import QuantumState
 from typing import List, Union, Any
 import re
 
+
 class DensityMatrix:
 
     def __init__(self, num_qubits: int) -> None:
@@ -16,7 +17,7 @@ class DensityMatrix:
     def add_gate(self, gate: QuantumGate, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
-    def add_noise(self, noise: QuantumNoise,qubit_indices: list[int]) -> None:
+    def add_noise(self, noise: QuantumNoise, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
     '''
@@ -24,6 +25,7 @@ class DensityMatrix:
     The state should be in the final state after evolving after the compute method
     is called
     '''
+
     def compute(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement compute method.")
 
@@ -31,6 +33,7 @@ class DensityMatrix:
     Measure a single qubit, after which the state is still a quantum state, 
     But the state of the measured qubit has collapsed to |0> or |1>
     '''
+
     def measure(self, qubit_index: int) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
@@ -39,12 +42,14 @@ class DensityMatrix:
     :statestr A string describing the state that you want to know the probability 
     For example, in a 2-qubit setting, the statestr can be "00" or "01", or "10" or "11"
     '''
+
     def measureAll(self, statestr: str) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
     '''
     Return the expectation value of the final quantum state given observable
     '''
+
     def expectation(self, observable: QuantumGate, qubit_indices: Union[list[int], int]) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement expectation method.")
 
@@ -57,7 +62,7 @@ class NumpyDensity(DensityMatrix):
     def add_gate(self, gate: QuantumGate, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
-    def add_noise(self, noise: QuantumNoise,qubit_indices: list[int]) -> None:
+    def add_noise(self, noise: QuantumNoise, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_noise method.")
 
     '''
@@ -65,6 +70,7 @@ class NumpyDensity(DensityMatrix):
     The state should be in the final state after evolving after the compute method
     is called
     '''
+
     def compute(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement compute method.")
 
@@ -72,6 +78,7 @@ class NumpyDensity(DensityMatrix):
     Measure a single qubit, after which the state is still a quantum state, 
     But the state of the measured qubit has collapsed to |0> or |1>
     '''
+
     def measure(self, qubit_index: int) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
@@ -80,15 +87,16 @@ class NumpyDensity(DensityMatrix):
     :statestr A string describing the state that you want to know the probability 
     For example, in a 2-qubit setting, the statestr can be "00" or "01", or "10" or "11"
     '''
+
     def measureAll(self, statestr: str) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
     '''
     Return the expectation value of the final quantum state given observable
     '''
+
     def expectation(self, observable: QuantumGate, qubit_indices: Union[list[int], int]) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement expectation method.")
-
 
 
 class TorchDensity(DensityMatrix):
@@ -99,7 +107,7 @@ class TorchDensity(DensityMatrix):
     def add_gate(self, gate: QuantumGate, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
-    def add_noise(self, noise: QuantumNoise,qubit_indices: list[int]) -> None:
+    def add_noise(self, noise: QuantumNoise, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_noise method.")
 
     '''
@@ -107,6 +115,7 @@ class TorchDensity(DensityMatrix):
     The state should be in the final state after evolving after the compute method
     is called
     '''
+
     def compute(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement compute method.")
 
@@ -114,6 +123,7 @@ class TorchDensity(DensityMatrix):
     Measure a single qubit, after which the state is still a quantum state, 
     But the state of the measured qubit has collapsed to |0> or |1>
     '''
+
     def measure(self, qubit_index: int) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
@@ -122,12 +132,14 @@ class TorchDensity(DensityMatrix):
     :statestr A string describing the state that you want to know the probability 
     For example, in a 2-qubit setting, the statestr can be "00" or "01", or "10" or "11"
     '''
+
     def measureAll(self, statestr: str) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
     '''
     Return the expectation value of the final quantum state given observable
     '''
+
     def expectation(self, observable: QuantumGate, qubit_indices: Union[list[int], int]) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement expectation method.")
 
@@ -140,7 +152,7 @@ class GpuDensity(DensityMatrix):
     def add_gate(self, gate: QuantumGate, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
-    def add_noise(self, noise: QuantumNoise,qubit_indices: list[int]) -> None:
+    def add_noise(self, noise: QuantumNoise, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_noise method.")
 
     '''
@@ -148,6 +160,7 @@ class GpuDensity(DensityMatrix):
     The state should be in the final state after evolving after the compute method
     is called
     '''
+
     def compute(self) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement compute method.")
 
@@ -155,6 +168,7 @@ class GpuDensity(DensityMatrix):
     Measure a single qubit, after which the state is still a quantum state, 
     But the state of the measured qubit has collapsed to |0> or |1>
     '''
+
     def measure(self, qubit_index: int) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
@@ -163,11 +177,13 @@ class GpuDensity(DensityMatrix):
     :statestr A string describing the state that you want to know the probability 
     For example, in a 2-qubit setting, the statestr can be "00" or "01", or "10" or "11"
     '''
+
     def measureAll(self, statestr: str) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
     '''
     Return the expectation value of the final quantum state given observable
     '''
+
     def expectation(self, observable: QuantumGate, qubit_indices: Union[list[int], int]) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement expectation method.")

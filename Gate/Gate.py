@@ -2,6 +2,7 @@ import numpy as np
 import Parameter
 from typing import List, Union, Any
 
+
 class QuantumGate:
     def __init__(self, num_qubits: int) -> None:
         self.num_qubits = num_qubits
@@ -28,7 +29,6 @@ class Hadamard(QuantumGate):
 
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
-
 
 
 class PauliX(QuantumGate):
@@ -67,7 +67,6 @@ class PauliZ(QuantumGate):
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
-
 class RotateX(QuantumGate):
     def __init__(self, theta: Parameter.qtype) -> None:
         super().__init__(num_qubits=1)
@@ -80,7 +79,6 @@ class RotateX(QuantumGate):
 
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
-
 
 
 class RotateY(QuantumGate):
@@ -98,7 +96,6 @@ class RotateY(QuantumGate):
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
-
 class RotateZ(QuantumGate):
     def __init__(self, theta: Parameter.qtype) -> None:
         super().__init__(num_qubits=1)
@@ -110,7 +107,6 @@ class RotateZ(QuantumGate):
 
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
-
 
 
 class Phase(QuantumGate):
@@ -161,7 +157,6 @@ class CPhase(QuantumGate):
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
-
 class Swap(QuantumGate):
     def __init__(self) -> None:
         super().__init__(num_qubits=2)
@@ -174,7 +169,6 @@ class Swap(QuantumGate):
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
-
 class ControlledZ(QuantumGate):
     def __init__(self) -> None:
         super().__init__(num_qubits=2)
@@ -185,7 +179,6 @@ class ControlledZ(QuantumGate):
 
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
-
 
 
 class Toffoli(QuantumGate):
@@ -220,21 +213,32 @@ class Fredkin(QuantumGate):
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
-
 '''
 Use multi qubit to control another qubit.
 param: act_condition is a list of 0 and 1. For example, for f(001)=1, the act_condition is [0,0,1]
 '''
+
+
 class MultiControlX(QuantumGate):
 
-    def __init__(self,numqubits:int,act_condition:List[int]) -> None:
+    def __init__(self, numqubits: int, act_condition: List[int]) -> None:
         super().__init__(num_qubits=numqubits)
         self.act_condition = act_condition
-        if not len(self.act_condition)==numqubits:
+        if not len(self.act_condition) == numqubits:
             raise ValueError("The number of act_condition must be equal to the number of qubits.")
-        
-        
-        
+
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
+
+'''
+Add a layer of all hadamard gate    
+'''
+
+
+class AllHadamard(QuantumGate):
+    def __init__(self, numqubits: int) -> None:
+        super().__init__(num_qubits=numqubits)
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")

@@ -3,21 +3,20 @@ import Parameter
 from Circuit import QuantumCircuit
 from typing import List, Union, Any
 
-
 '''
 Circuit Optimizer Class
 '''
+
+
 class CircuitOptimizer:
     def __init__(self, num_qubits: int) -> None:
         self.num_qubits = num_qubits
 
-
     def set_circuit(self, circuit: QuantumCircuit) -> None:
         self.circuit = circuit
 
-    
-    def optimize(self)->NotImplementedError:
+    def optimize(self) -> NotImplementedError:
         raise NotImplementedError("Subclasses must implement optimize method.")
-    
-    
-    
+
+
+
