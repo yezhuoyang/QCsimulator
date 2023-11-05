@@ -1,12 +1,7 @@
-'''
-Algorithmic framework of shor algorithm
-'''
-from typing import List
-
 from Algorithm import QuantumAlgorithm
 
 
-class Shor(QuantumAlgorithm):
+class BVAlgorithm(QuantumAlgorithm):
 
     def __init__(self, num_qubits: int) -> None:
         super().__init__(num_qubits)
