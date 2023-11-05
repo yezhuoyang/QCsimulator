@@ -16,11 +16,8 @@ class QuantumCircuit:
     def add_gate(self, gate: QuantumGate, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
-
     def clear_all(self) -> None:
         raise NotImplementedError("clear_all must implement add_gate method.")
-
-
 
     '''
     Implement the computation process of the whole circuit.
@@ -267,9 +264,9 @@ class NumpyCircuit(QuantumCircuit):
             return matrix
         elif gate.num_qubits >= 3:
             '''
-            The construction process is different between normal gate with multiControlX
+            The construction process is different between normal gate with multiControlX and multiControlZ
             '''
-            if not isinstance(gate, MultiControlX):
+            if not isinstance(gate, MultiControlX) and not isinstance(gate, MultiControlZ):
                 gatematrix = gate.matrix()
                 matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
                 for column in range(0, 1 << self.num_qubits):
@@ -311,7 +308,7 @@ class NumpyCircuit(QuantumCircuit):
                             print(f"ki_l:{ki_l} kj_l:{kj_l} kq_l:{kq_l}  ki_r:{ki_r}  kj_r:{kj_r} kq_r:{kq_r}")
                             print(f"Element {row},{column} is set to Gate{gaterowindex}, {gatecolindex}")
                         matrix[row][column] = gatematrix[gaterowindex][gatecolindex]
-            else:
+            elif isinstance(gate, MultiControlX):
                 '''
                 When the gate is a multiControlled X
                 We should check weather the controlled condition is satisfied 
@@ -329,7 +326,7 @@ class NumpyCircuit(QuantumCircuit):
                 '''
                 maskint = (1 << (self.num_qubits - act_index - 1))
                 maskint = ~maskint
-                maskint = maskint %(1 << self.num_qubits)
+                maskint = maskint % (1 << self.num_qubits)
                 for column in range(0, 1 << self.num_qubits):
                     for row in range(0, 1 << self.num_qubits):
                         if (row & maskint) != (column & maskint):
@@ -357,6 +354,38 @@ class NumpyCircuit(QuantumCircuit):
                             matrix[row][column] = 0
                             continue
                         matrix[row][column] = 1
+            elif isinstance(gate, MultiControlZ):
+                '''
+                When the gate is a multiControlled Z
+                We should check weather the controlled condition is satisfied 
+                before we set the matrix element to 1
+                For example, when the act_condition=[0,1], and the act_index=2
+                |011> will change to -|011>,  
+                |010> will not change
+                '''
+                control_indices = qubit_indices[0]
+                act_index = qubit_indices[1]
+                act_condition = gate.act_condition
+                matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
+                for column in range(0, 1 << self.num_qubits):
+                    checkControl = True
+                    '''
+                        Check that whether the bit status of all the control qubits match the act_condition
+                        '''
+                    for control_index in range(len(control_indices)):
+                        if self.bitstatus(control_indices[control_index], column) != act_condition[control_index]:
+                            matrix[column][column] = 1
+                            checkControl = False
+                            break
+                    if not checkControl:
+                        continue
+                    '''
+                    When the control condition holds, check whether the element is 1
+                    '''
+                    if self.bitstatus(act_index, column) != 1:
+                        matrix[column][column] = 1
+                        continue
+                    matrix[column][column] = -1
         if self.Debug:
             if not self.check_unitary(matrix, self.num_qubits):
                 raise ValueError("Matrix not unitary")
