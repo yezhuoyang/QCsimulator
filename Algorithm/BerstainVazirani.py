@@ -9,6 +9,7 @@ from typing import List, Union, Any
 import re
 from .util import convert_int_to_list
 
+
 class BVAlgorithm(QuantumAlgorithm):
 
     def __init__(self, num_qubits: int) -> None:
@@ -59,12 +60,12 @@ class BVAlgorithm(QuantumAlgorithm):
         return controllist
 
     def compile_func(self) -> None:
-        alist = convert_int_to_list(self.num_qubits-1,self._a)
+        alist = convert_int_to_list(self.num_qubits - 1, self._a)
         for i in range(0, self.num_qubits - 1):
             if alist[i] == 1:
                 self.circuit.add_gate(Gate.CNOT(), [i, self.num_qubits - 1])
-        if self._b==1:
-            self.circuit.add_gate(Gate.PauliX(), [self.num_qubits-1])
+        if self._b == 1:
+            self.circuit.add_gate(Gate.PauliX(), [self.num_qubits - 1])
         return
 
     def compute_result(self) -> None:

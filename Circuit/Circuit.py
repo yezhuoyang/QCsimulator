@@ -17,7 +17,12 @@ class QuantumCircuit:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
     def clear_all(self) -> None:
-        raise NotImplementedError("clear_all must implement add_gate method.")
+        raise NotImplementedError("clear_all must implement clear_all method.")
+
+
+    def clear_state(self) -> None:
+        raise NotImplementedError("clear_all must implement clear_state method.")
+
 
     '''
     Implement the computation process of the whole circuit.
@@ -146,6 +151,9 @@ class NumpyCircuit(QuantumCircuit):
 
     def clear_all(self) -> None:
         self.__init__(self.num_qubits)
+
+    def clear_state(self) -> None:
+        self.state = QuantumState(qubit_number=self.num_qubits)
 
     '''
     Given an integer state_int, return the bit status of qubit qubit_index
