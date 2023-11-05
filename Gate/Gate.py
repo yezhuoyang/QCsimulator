@@ -216,6 +216,8 @@ class Fredkin(QuantumGate):
 '''
 Use multi qubit to control another qubit.
 param: act_condition is a list of 0 and 1. For example, for f(001)=1, the act_condition is [0,0,1]
+When we create a MulticontrolX, the last qubit in the qubit_indices is the controlled one, while the first
+n qubits represent the act_condition 
 '''
 
 

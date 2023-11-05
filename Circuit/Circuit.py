@@ -26,11 +26,11 @@ class QuantumCircuit:
         return NotImplementedError("Subclasses must implement compute method.")
 
     '''
-    Measure a single qubit, after which the state is still a quantum state, 
-    But the state of the measured qubit has collapsed to |0> or |1>
+    Measure a subset of, after which the state is still a quantum state, 
+    But the state of the measured qubits has collapsed 
     '''
 
-    def measure(self, qubit_index: int) -> NotImplementedError:
+    def measure(self, qubit_indices: List) -> NotImplementedError:
         return NotImplementedError("Subclasses must implement measure method.")
 
     '''
@@ -177,9 +177,9 @@ class NumpyCircuit(QuantumCircuit):
             '''
             Change all element with odd index pair to -1
             '''
-            maxk=int((N-2)/2)+1
-            for i in range(0,maxk):
-                for j in range(0,maxk):
+            maxk = int((N - 2) / 2) + 1
+            for i in range(0, maxk):
+                for j in range(0, maxk):
                     matrix[2 * i + 1][2 * j + 1] = -1
             return matrix / np.sqrt(N)
         '''
@@ -329,11 +329,11 @@ class NumpyCircuit(QuantumCircuit):
 
     '''
     Give a list of gates in the same column/layer, expand them to the whole matrix
-    For example, when the list is [H,H,H], it should return the samematrix as all hadmard gate.
+    For example, when the list is [H,H,H], it should return the same matrix as all hadamard gate.
     '''
 
     def expand_kron_multi(self, gatelist: List) -> np.ndarray:
-        return np.array([0,0])
+        return np.array([0, 0])
 
     def compute(self) -> None:
         while self._compute_step():
@@ -372,13 +372,87 @@ class NumpyCircuit(QuantumCircuit):
         self.calc_step += 1
         return True
 
-    def measure(self, qubit_index: int) -> NotImplementedError:
+    '''
+    Check weather the qubit status represented by integer pos match the qubit_status list, given the qubit_indices
+    For example, when pos=2=010, the qubit indices=[1,2], and the qubit_status=[0,1], the answer should be true
+    because the status of the last qubits are indeed 01
+    '''
+
+    def match_index(self, pos: int, qubit_indices: List, qubit_status: List):
+        return
+
+    '''
+    Calculate the bitlist of pos
+    For example, when pos=010=2, if will return [0,1,0]
+    '''
+
+    def bit_list(self, num_qubits: int, pos: int):
+        bitlist = []
+        k = pos
+        for i in range(0, num_qubits):
+            bit = k % 2
+            bitlist.insert(0, bit)
+            k = (k >> 1)
+        return bitlist
+
+    def state_vector(self) -> np.ndarray:
+        return self.state.state_vector
+
+    '''
+    Measurement operation, return the probability list of measurement 
+    For example, if the state after computation is
+    |000>/2**0.5+|111>/2**0.5, and the qubit indices is set to [0,2], then the probabilities 
+    of measuring |00>,|01>,|10>,|11> are 0.5,0,0,0.5. (Doing inner-product)
+    After we randomly choose a result, say 00 is the outcome, the state collapses to |000>
+    The function return a list of 0,1. For example, when the measurement result is |00>, it will return [0,0].
+    '''
+
+    def measure(self, qubit_indices: List) -> List:
         '''
         First make sure the computation is done
         '''
         if self.calc_step != self.num_qubits:
             self.compute()
-        return NotImplementedError("Subclasses must implement measure method.")
+        l = len(qubit_indices)
+        '''
+        The final probability of all possible measurement result
+        in the subsystem
+        '''
+        problist = [0] * (1 << l)
+        state_vector = self.state_vector()
+        for i in range(0, 1 << self.num_qubits):
+            qubit_status_list = self.bit_list(self.num_qubits, i)
+            sub_status_list = [qubit_status_list[index] for index in qubit_indices]
+            pos = 0
+            for i in range(0, l):
+                pos = pos + sub_status_list[i] << (l - i - 1)
+            problist[pos] += (state_vector[i] * np.conjugate(state_vector[i]))
+        '''
+        Randomly select a result based on the problist
+        '''
+        problist = [x / sum(problist) for x in problist]
+        result = np.random.choice(list(range(0, 1 << l)), 1, p=problist)
+        result = self.bit_list(l, result)
+        '''
+        Collapse the final state after this measurement
+        '''
+        normalization_factor = 0
+        for i in range(0, 1 << self.num_qubits):
+            qubit_status_list = self.bit_list(self.num_qubits, i)
+            sub_status_list = [qubit_status_list[index] for index in qubit_indices]
+            if sub_status_list != result:
+                state_vector[i] = 0
+            else:
+                normalization_factor += (state_vector[i] * np.conjugate(state_vector[i]))
+        state_vector = state_vector / (np.sqrt(normalization_factor))
+        self.state.reset_state(state_vector)
+        return result
+
+    '''
+    Measureall qubit. 
+    We require users to set the expected qubit bitstring outcome of this measurement, and 
+    we will return the probability to them with regard to the given bitstring.
+    '''
 
     def measureAll(self, statestr: str) -> np.complex128:
         '''
@@ -443,9 +517,6 @@ class NumpyCircuit(QuantumCircuit):
 
     def to_qasm(self) -> str:
         return "Not"
-
-    def state_vector(self) -> np.ndarray:
-        return self.state.state_vector
 
 
 '''

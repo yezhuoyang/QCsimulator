@@ -32,6 +32,7 @@ class QuantumState:
     '''
     Reset the state.
     '''
+
     def reset_state(self, state_vector: np.ndarray[Parameter.qtype] = None) -> None:
         # The input dimension of state vector must be (n,)
         if len(list(state_vector.shape)) > 1:
@@ -47,7 +48,7 @@ class QuantumState:
         if 2 ** self.qubit_number != state_vector.shape[0]:
             raise ValueError("Qubit number doesn't match the shape of the state vector")
         self.state_vector = state_vector
-        #self.normalize()
+        # self.normalize()
 
     def normalize(self) -> None:
         norm = np.sqrt(sum([abs(x) ** 2 for x in self.state_vector]))
@@ -62,26 +63,25 @@ class QuantumState:
 
     def tensor_product(self, other_state: "QuantumState") -> "QuantumState":
         tensor_product_vector = np.kron(self.state_vector, other_state.state_vector)
-        return QuantumState(np.array(tensor_product_vector, dtype=Parameter.qtype),qubit_number=self.qubit_number+other_state.qubit_number)
-
+        return QuantumState(np.array(tensor_product_vector, dtype=Parameter.qtype),
+                            qubit_number=self.qubit_number + other_state.qubit_number)
 
     '''
     Print the dirac notation of the state
     '''
-    def show_state_dirac(self)->None:
-        Dirac_string=""
-        for i in range(1<<self.qubit_number):
-            if self.state_vector[i]!=0:
+
+    def show_state_dirac(self) -> None:
+        Dirac_string = ""
+        for i in range(1 << self.qubit_number):
+            if self.state_vector[i] != 0:
                 '''
                 If the length of Dirac_string is not 0, Should also add a plus sign
                 '''
-                if len(Dirac_string)>0:
-                    Dirac_string+="+"
-                bitstring=bin(i)[2:].zfill(self.qubit_number)
-                Dirac_string+=f"{self.state_vector[i]}|{bitstring}>"
+                if len(Dirac_string) > 0:
+                    Dirac_string += "+"
+                bitstring = bin(i)[2:].zfill(self.qubit_number)
+                Dirac_string += f"{self.state_vector[i]}|{bitstring}>"
         print(Dirac_string)
-
-
 
     def show_state(self) -> None:
         print(self.state_vector)

@@ -10,10 +10,12 @@ from Algorithm import QuantumAlgorithm
 
 class DuetchJosa(QuantumAlgorithm):
 
-    def __init__(self, num_qubits) -> None:
-        self.num_qubits = num_qubits
+    def __init__(self, num_qubits: int) -> None:
+        super().__init__(num_qubits)
         self.circuit = Circuit.NumpyCircuit(num_qubits)
         self.UF = []
+        self.computed = False
+        self.balance = False
 
     def set_input(self, uf: List) -> None:
         self.UF = uf
@@ -40,26 +42,42 @@ class DuetchJosa(QuantumAlgorithm):
             return True
         return False
 
-    def construct_circuit(self):
+    def construct_circuit(self) -> None:
         inputdim = self.num_qubits - 1
         '''
         The first layer of Hadmard 
         '''
-        for i in range(0, inputdim):
-            self.circuit.add_gate(Gate.Hadamard(), i)
-        
+        self.circuit.add_gate(Gate.PauliX(), [inputdim])
+        self.circuit.add_gate(Gate.AllHadamard(self.num_qubits), list(range(0, self.num_qubits)))
+        self.compile_uf()
+        self.circuit.add_gate(Gate.AllHadamard(self.num_qubits), list(range(0, self.num_qubits)))
 
-
-
-        raise NotImplementedError("Subclasses must implement construct_circuit method.")
-
-    def compute_result(self) -> NotImplementedError:
-        raise NotImplementedError("Subclasses must implement compute_result method.")
+    def compute_result(self) -> None:
+        self.circuit.compute()
+        result = self.circuit.measure(list(range(0, self.num_qubits - 1)))
+        if sum(result) == 0:
+            self.balance = False
+            print("The function is constant")
+        else:
+            self.balance = True
+            print("The function is balanced")
 
     '''
-    Compiler the Uf gate given the List of Uf input
+    Compile the Uf gate given the List of Uf input
+    We should use MultiControlX gate here for convenience
     '''
 
-    def compile_uf(self):
-
+    def compile_uf(self) -> None:
+        for i in range(0, 1 << self.num_qubits - 1):
+            if self.UF[i] == 1:
+                self.circuit.add_gate(Gate.MultiControlX(self.num_qubits, self.convert_int_to_list(i)),
+                                      list(range(0, self.num_qubits)))
         return
+
+    def convert_int_to_list(self, input: int):
+        controllist = []
+        k = input
+        for i in range(0, self.num_qubits - 1):
+            controllist.insert(0, k % 2)
+            k = (k >> 1)
+        return controllist
