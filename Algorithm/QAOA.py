@@ -3,7 +3,7 @@ from typing import List
 from Algorithm import QuantumAlgorithm
 
 
-class HHL(QuantumAlgorithm):
+class QAOA(QuantumAlgorithm):
 
     def __init__(self, num_qubits: int) -> None:
         super().__init__(num_qubits)

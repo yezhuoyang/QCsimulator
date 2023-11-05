@@ -74,9 +74,9 @@ class DuetchJosa(QuantumAlgorithm):
                                       list(range(0, self.num_qubits)))
         return
 
-    def convert_int_to_list(self, input: int):
+    def convert_int_to_list(self, alginput: int):
         controllist = []
-        k = input
+        k = alginput
         for i in range(0, self.num_qubits - 1):
             controllist.insert(0, k % 2)
             k = (k >> 1)
