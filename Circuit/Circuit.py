@@ -450,16 +450,22 @@ class NumpyCircuit(QuantumCircuit):
         self.state.show_state_dirac()
         for i in range(0, 1 << self.num_qubits):
             qubit_status_list = self.bit_list(self.num_qubits, i)
+            print("qubit_status_list")
+            print(qubit_status_list)
             sub_status_list = [qubit_status_list[index] for index in qubit_indices]
+            print("sub_state_list")
+            print(sub_status_list)
             pos = 0
-            for i in range(0, l):
-                pos = pos + (sub_status_list[i] << (l - i - 1))
+            for j in range(0, l):
+                pos = pos + (sub_status_list[j] << (l - j - 1))
+            print("pos")
+            print(pos)
             problist[pos] += (state_vector[i] * np.conjugate(state_vector[i]))
         '''
         Randomly select a result based on the problist
         '''
         print(problist)
-        problist = [x / sum(problist) for x in problist]
+        problist = [np.real(x / sum(problist)) for x in problist]
         result = np.random.choice(list(range(0, 1 << l)), 1, p=problist)
         result = self.bit_list(l, result)
         '''
