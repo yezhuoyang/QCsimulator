@@ -3,8 +3,8 @@ import sys
 sys.path.append('..')
 import Algorithm
 
-alg = Algorithm.DuetchJosa(2)
-uf = [0, 0]
+alg = Algorithm.DuetchJosa(3)
+uf = [1,1,1,1]
 alg.set_input(uf)
 alg.construct_circuit()
 alg.circuit.Debug = True

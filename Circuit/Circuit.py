@@ -80,7 +80,6 @@ class NumpyCircuit(QuantumCircuit):
         '''
         self.calc_sequence = []
         self.gate_num = 0
-        self.calc_dict = {item: False for item in self.gate_list}
         self.calc_step = 0
         self.Debug = False
 
@@ -126,7 +125,6 @@ class NumpyCircuit(QuantumCircuit):
                         raise ValueError(f"{index} in qubit_indices {qubit_indices} out of range!")
                     if qubit_indices[1] < 0 or qubit_indices[1] > self.num_qubits:
                         raise ValueError(f"{qubit_indices[1]} in qubit_indices {qubit_indices} out of range!")
-                qubit_indices[0] = tuple(qubit_indices[0])
             else:
                 if gate.num_qubits != len(qubit_indices):
                     raise ValueError(
@@ -140,7 +138,6 @@ class NumpyCircuit(QuantumCircuit):
         if isinstance(qubit_indices, int):
             qubit_indices = [qubit_indices]
         self.gate_list.append((gate, tuple(qubit_indices), self.gate_num))
-        self.calc_dict[(gate, tuple(qubit_indices), self.gate_num)] = False
         self.calc_sequence.append([(gate, tuple(qubit_indices), self.gate_num)])
         self.gate_num += 1
 
@@ -170,7 +167,7 @@ class NumpyCircuit(QuantumCircuit):
     def check_unitary(self, matrix: np.ndarray, dimension: int):
         I = np.matmul(matrix.conjugate(), matrix)
         eye = np.eye(1 << dimension, dtype=Parameter.qtype)
-        return np.allclose(I, eye,atol=0.1)
+        return np.allclose(I, eye, atol=0.1)
 
     '''
     Given a quantum gate on single qubit, expand the whole matrix
@@ -187,10 +184,10 @@ class NumpyCircuit(QuantumCircuit):
             matrix = np.ones((N, N), dtype=Parameter.qtype)
             for i in range(0, N):
                 for j in range(0, N):
-                    ilist=self.bit_list(self.num_qubits,i)
-                    jlist=self.bit_list(self.num_qubits,j)
+                    ilist = self.bit_list(self.num_qubits, i)
+                    jlist = self.bit_list(self.num_qubits, j)
                     ijlist = [ilist[q] * jlist[q] for q in range(self.num_qubits)]
-                    if sum(ijlist)%2==1:
+                    if sum(ijlist) % 2 == 1:
                         matrix[i][j] = -1
             matrix = matrix / np.sqrt(N)
             if self.Debug:
@@ -312,7 +309,7 @@ class NumpyCircuit(QuantumCircuit):
                 When the gate is a multiControlled X
                 We should check weather the controlled condition is satisfied 
                 before we set the matrix element to 1
-                For example, when the control
+                For example, when the control 
                 
                 
                 '''
@@ -333,13 +330,12 @@ class NumpyCircuit(QuantumCircuit):
                             matrix[row][column] = 0
                             continue
                         checkControl = True
-                        for i in len(control_indices):
-
-                            if self.bitstatus(control_indices[i], column) != act_condition[control_index]:
+                        for control_index in range(len(control_indices)):
+                            if self.bitstatus(control_indices[control_index], column) != act_condition[control_index]:
                                 matrix[row][column] = 0
                                 checkControl = False
                                 break
-                        if checkControl == False:
+                        if not checkControl:
                             continue
                         if self.bitstatus(act_index, column) != ((self.bitstatus(act_index, row) + 1) % 2):
                             matrix[row][column] = 0
@@ -379,11 +375,6 @@ class NumpyCircuit(QuantumCircuit):
         if self.Debug:
             print(f"Step :{self.calc_step}")
         '''
-        Avoid repeated computation
-        '''
-        if self.calc_dict[self.gate_list[self.calc_step]]:
-            return False
-        '''
         First get the whole matrix after doing kron product
         '''
         if len(self.calc_sequence[self.calc_step]) == 1:
@@ -394,7 +385,6 @@ class NumpyCircuit(QuantumCircuit):
         if self.Debug:
             print(f"The {self.calc_step} step of calculation, the matrix is \n {matrix}")
         self.state.reset_state(np.matmul(matrix, self.state.state_vector))
-        self.calc_dict[self.gate_list[self.calc_step]] = True
         self.calc_step += 1
         return True
 

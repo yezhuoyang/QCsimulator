@@ -22,7 +22,6 @@ class DuetchJosa(QuantumAlgorithm):
         if not self.check_uf():
             raise ValueError("Uf is not a valid input")
 
-
     '''
     Check weather uf is a legal input: Either balance or constant
     what's more, the size of the uz should be num_qubit -1 because we need 
@@ -70,10 +69,13 @@ class DuetchJosa(QuantumAlgorithm):
     '''
 
     def compile_uf(self) -> None:
-        for i in range(0, 1 << self.num_qubits - 1):
+        for i in range(0, 1 << (self.num_qubits - 1)):
             if self.UF[i] == 1:
-                self.circuit.add_gate(Gate.MultiControlX(self.num_qubits, self.convert_int_to_list(i)),
-                                      list(range(0, self.num_qubits)))
+                if self.num_qubits == 2:
+                    self.circuit.add_gate(Gate.CNOT(),[0,1])
+                else:
+                    self.circuit.add_gate(Gate.MultiControlX(self.num_qubits, self.convert_int_to_list(i)),
+                                          [list(range(0, self.num_qubits - 1)), self.num_qubits - 1])
         return
 
     def convert_int_to_list(self, alginput: int):

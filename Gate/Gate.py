@@ -9,7 +9,7 @@ class QuantumGate:
         self._dagger = False
 
     def matrix(self) -> NotImplementedError:
-        raise NotImplementedError("Subclasses must implement apply method.")
+        raise NotImplementedError("Subclasses must implement matrix method.")
 
     def dagger(self) -> None:
         self._dagger = True
@@ -226,8 +226,9 @@ class MultiControlX(QuantumGate):
     def __init__(self, numqubits: int, act_condition: List[int]) -> None:
         super().__init__(num_qubits=numqubits)
         self.act_condition = act_condition
-        if not len(self.act_condition) == numqubits:
-            raise ValueError("The number of act_condition must be equal to the number of qubits.")
+        if not len(self.act_condition) == (numqubits-1):
+            raise ValueError("The number of act_condition must be equal to the number of qubits -1.")
+
 
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
