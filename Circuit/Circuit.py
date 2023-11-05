@@ -411,7 +411,7 @@ class NumpyCircuit(QuantumCircuit):
         k = pos
         for i in range(0, num_qubits):
             bit = k % 2
-            bitlist.insert(0, bit)
+            bitlist.insert(0, int(bit))
             k = (k >> 1)
         return bitlist
 
