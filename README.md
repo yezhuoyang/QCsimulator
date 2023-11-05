@@ -83,7 +83,7 @@ circuit.measureAll("0011")
 
 ## Algorithm
 
-- [ ] Deutsch's algorithm
+- [x] Deutsch's algorithm
 - [ ] Grover's algorithm
 - [ ] QFFT
 - [ ] Shor's algorithm
@@ -93,6 +93,14 @@ circuit.measureAll("0011")
 - [ ] BackPropagation
 - [ ] QAOA algorithm
 - [ ] VQE algorithm
+
+
+## Layout Synthesis
+
+- [ ] Quantum chip class
+- [ ] Transpile circuit to chips
+- [ ] Layout synthesis benchmark
+
 
 ## Compatibility
 
