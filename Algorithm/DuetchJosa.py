@@ -21,7 +21,7 @@ class DuetchJosa(QuantumAlgorithm):
         self.UF = uf
         if not self.check_uf():
             raise ValueError("Uf is not a valid input")
-        raise None
+
 
     '''
     Check weather uf is a legal input: Either balance or constant
@@ -31,11 +31,13 @@ class DuetchJosa(QuantumAlgorithm):
 
     def check_uf(self) -> bool:
         if not len(self.UF) == (1 << (self.num_qubits - 1)):
+            print('Length error')
             return False
         count = 0
         for i in range(0, len(self.UF)):
             if self.UF[i] == 0:
                 count += 1
+        print(count)
         if count == (len(self.UF)) or count == 0:
             return True
         if count == (1 << (self.num_qubits - 2)):

@@ -137,6 +137,8 @@ class NumpyCircuit(QuantumCircuit):
             '''Make sure that the qubit indices of single qubit gate be just an integer'''
             if gate.num_qubits == 1:
                 qubit_indices = qubit_indices[0]
+        if isinstance(qubit_indices, int):
+            qubit_indices = [qubit_indices]
         self.gate_list.append((gate, tuple(qubit_indices), self.gate_num))
         self.calc_dict[(gate, tuple(qubit_indices), self.gate_num)] = False
         self.calc_sequence.append([(gate, tuple(qubit_indices), self.gate_num)])
@@ -162,6 +164,15 @@ class NumpyCircuit(QuantumCircuit):
         return (state_int >> (self.num_qubits - qubit_index - 1)) & 1
 
     '''
+    Check weather a expanded matrix is still unitary
+    '''
+
+    def check_unitary(self, matrix: np.ndarray, dimension: int):
+        I = np.matmul(matrix.conjugate(), matrix)
+        eye = np.eye(1 << dimension, dtype=Parameter.qtype)
+        return np.allclose(I, eye,atol=0.1)
+
+    '''
     Given a quantum gate on single qubit, expand the whole matrix
     '''
 
@@ -174,14 +185,20 @@ class NumpyCircuit(QuantumCircuit):
         if isinstance(gate, AllHadamard):
             N = 2 ** gate.num_qubits
             matrix = np.ones((N, N), dtype=Parameter.qtype)
-            '''
-            Change all element with odd index pair to -1
-            '''
-            maxk = int((N - 2) / 2) + 1
-            for i in range(0, maxk):
-                for j in range(0, maxk):
-                    matrix[2 * i + 1][2 * j + 1] = -1
-            return matrix / np.sqrt(N)
+            for i in range(0, N):
+                for j in range(0, N):
+                    ilist=self.bit_list(self.num_qubits,i)
+                    jlist=self.bit_list(self.num_qubits,j)
+                    ijlist = [ilist[q] * jlist[q] for q in range(self.num_qubits)]
+                    if sum(ijlist)%2==1:
+                        matrix[i][j] = -1
+            matrix = matrix / np.sqrt(N)
+            if self.Debug:
+                if not self.check_unitary(matrix, self.num_qubits):
+                    print(matrix)
+                    print(np.matmul(matrix, np.conjugate(matrix)))
+                    raise ValueError("Matrix not unitary")
+            return matrix
         '''
         If the circuit has only one qubit, just return the matrix of single
         gate
@@ -240,6 +257,9 @@ class NumpyCircuit(QuantumCircuit):
                         print(f"ki_l:{ki_l} kj_l:{kj_l}   ki_r:{ki_r}  kj_r:{kj_r}")
                         print(gaterowindex, gatecolindex)
                     matrix[row][column] = gatematrix[gaterowindex][gatecolindex]
+            if self.Debug:
+                if not self.check_unitary(matrix, self.num_qubits):
+                    raise ValueError("Matrix not unitary")
             return matrix
         elif gate.num_qubits >= 3:
             '''
@@ -325,6 +345,12 @@ class NumpyCircuit(QuantumCircuit):
                             matrix[row][column] = 0
                             continue
                         matrix[row][column] = 1
+        if self.Debug:
+            if not self.check_unitary(matrix, self.num_qubits):
+                print(matrix)
+                print(np.matmul(matrix, matrix.conjugate()))
+
+                raise ValueError("Matrix not unitary")
         return matrix
 
     '''
@@ -420,16 +446,19 @@ class NumpyCircuit(QuantumCircuit):
         '''
         problist = [0] * (1 << l)
         state_vector = self.state_vector()
+        print(state_vector)
+        self.state.show_state_dirac()
         for i in range(0, 1 << self.num_qubits):
             qubit_status_list = self.bit_list(self.num_qubits, i)
             sub_status_list = [qubit_status_list[index] for index in qubit_indices]
             pos = 0
             for i in range(0, l):
-                pos = pos + sub_status_list[i] << (l - i - 1)
+                pos = pos + (sub_status_list[i] << (l - i - 1))
             problist[pos] += (state_vector[i] * np.conjugate(state_vector[i]))
         '''
         Randomly select a result based on the problist
         '''
+        print(problist)
         problist = [x / sum(problist) for x in problist]
         result = np.random.choice(list(range(0, 1 << l)), 1, p=problist)
         result = self.bit_list(l, result)
