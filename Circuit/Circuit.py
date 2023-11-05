@@ -192,8 +192,6 @@ class NumpyCircuit(QuantumCircuit):
             matrix = matrix / np.sqrt(N)
             if self.Debug:
                 if not self.check_unitary(matrix, self.num_qubits):
-                    print(matrix)
-                    print(np.matmul(matrix, np.conjugate(matrix)))
                     raise ValueError("Matrix not unitary")
             return matrix
         '''
@@ -309,43 +307,49 @@ class NumpyCircuit(QuantumCircuit):
                 When the gate is a multiControlled X
                 We should check weather the controlled condition is satisfied 
                 before we set the matrix element to 1
-                For example, when the control 
-                
-                
+                For example, when the act_condition=[0,1], and the act_index=2
+                |010> will change to |011>,  
+                |011> will change to |010> 
                 '''
                 control_indices = qubit_indices[0]
                 act_index = qubit_indices[1]
                 act_condition = gate.act_condition
                 matrix = np.identity(1 << self.num_qubits, dtype=Parameter.qtype)
+                '''
+                All 0,1 element must be the same except the control qubit and the act qubit
+                '''
+                maskint = (1 << (self.num_qubits - act_index - 1))
+                maskint = ~maskint
+                maskint = maskint %(1 << self.num_qubits)
                 for column in range(0, 1 << self.num_qubits):
                     for row in range(0, 1 << self.num_qubits):
-                        '''
-                        All 0,1 element must be the same except the controll qubit and the act qubit
-                        '''
-                        maskint = (1 << (self.num_qubits - act_index - 1))
-                        for control_index in control_indices:
-                            maskint = maskint + (1 << (self.num_qubits - control_index - 1))
-                        maskint = ~maskint
                         if (row & maskint) != (column & maskint):
                             matrix[row][column] = 0
                             continue
                         checkControl = True
+                        '''
+                        Check that whether the bit status of all the control qubits match the act_condition
+                        '''
                         for control_index in range(len(control_indices)):
                             if self.bitstatus(control_indices[control_index], column) != act_condition[control_index]:
                                 matrix[row][column] = 0
                                 checkControl = False
                                 break
                         if not checkControl:
+                            if self.bitstatus(act_index, column) != (self.bitstatus(act_index, row)):
+                                matrix[row][column] = 0
+                                continue
+                            matrix[row][column] = 1
                             continue
+                        '''
+                        When the control condition holds, check whether the matrix flips the act qubit
+                        '''
                         if self.bitstatus(act_index, column) != ((self.bitstatus(act_index, row) + 1) % 2):
                             matrix[row][column] = 0
                             continue
                         matrix[row][column] = 1
         if self.Debug:
             if not self.check_unitary(matrix, self.num_qubits):
-                print(matrix)
-                print(np.matmul(matrix, matrix.conjugate()))
-
                 raise ValueError("Matrix not unitary")
         return matrix
 
@@ -436,25 +440,17 @@ class NumpyCircuit(QuantumCircuit):
         '''
         problist = [0] * (1 << l)
         state_vector = self.state_vector()
-        print(state_vector)
         self.state.show_state_dirac()
         for i in range(0, 1 << self.num_qubits):
             qubit_status_list = self.bit_list(self.num_qubits, i)
-            print("qubit_status_list")
-            print(qubit_status_list)
             sub_status_list = [qubit_status_list[index] for index in qubit_indices]
-            print("sub_state_list")
-            print(sub_status_list)
             pos = 0
             for j in range(0, l):
                 pos = pos + (sub_status_list[j] << (l - j - 1))
-            print("pos")
-            print(pos)
             problist[pos] += (state_vector[i] * np.conjugate(state_vector[i]))
         '''
         Randomly select a result based on the problist
         '''
-        print(problist)
         problist = [np.real(x / sum(problist)) for x in problist]
         result = np.random.choice(list(range(0, 1 << l)), 1, p=problist)
         result = self.bit_list(l, result)

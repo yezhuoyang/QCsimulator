@@ -72,7 +72,7 @@ class DuetchJosa(QuantumAlgorithm):
         for i in range(0, 1 << (self.num_qubits - 1)):
             if self.UF[i] == 1:
                 if self.num_qubits == 2:
-                    self.circuit.add_gate(Gate.CNOT(),[0,1])
+                    self.circuit.add_gate(Gate.CNOT(), [0, 1])
                 else:
                     self.circuit.add_gate(Gate.MultiControlX(self.num_qubits, self.convert_int_to_list(i)),
                                           [list(range(0, self.num_qubits - 1)), self.num_qubits - 1])

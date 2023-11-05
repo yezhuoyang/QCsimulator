@@ -21,6 +21,19 @@ D.print_state()
 '''
 
 
+def test_measure():
+    return
+
+
+def test_measure_all():
+    return
+
+
+
+
+
+
+
 C = Circuit.NumpyCircuit(3)
 C.Debug = True
 C.add_gate(Gate.Toffoli(), [0,1,2])
