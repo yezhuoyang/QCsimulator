@@ -6,6 +6,7 @@ import Circuit
 from typing import List, Union, Any
 import re
 from Algorithm import QuantumAlgorithm
+from .util import convert_int_to_list
 
 
 class DuetchJosa(QuantumAlgorithm):
@@ -74,14 +75,7 @@ class DuetchJosa(QuantumAlgorithm):
                 if self.num_qubits == 2:
                     self.circuit.add_gate(Gate.CNOT(), [0, 1])
                 else:
-                    self.circuit.add_gate(Gate.MultiControlX(self.num_qubits, self.convert_int_to_list(i)),
-                                          [list(range(0, self.num_qubits - 1)), self.num_qubits - 1])
+                    self.circuit.add_gate(
+                        Gate.MultiControlX(self.num_qubits, convert_int_to_list(self.num_qubits - 1, i)),
+                        [list(range(0, self.num_qubits - 1)), self.num_qubits - 1])
         return
-
-    def convert_int_to_list(self, alginput: int):
-        controllist = []
-        k = alginput
-        for i in range(0, self.num_qubits - 1):
-            controllist.insert(0, k % 2)
-            k = (k >> 1)
-        return controllist

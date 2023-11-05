@@ -16,6 +16,12 @@ class QuantumCircuit:
     def add_gate(self, gate: QuantumGate, qubit_indices: list[int]) -> None:
         raise NotImplementedError("Subclasses must implement add_gate method.")
 
+
+    def clear_all(self) -> None:
+        raise NotImplementedError("clear_all must implement add_gate method.")
+
+
+
     '''
     Implement the computation process of the whole circuit.
     The state should be in the final state after evolving after the compute method
@@ -140,6 +146,9 @@ class NumpyCircuit(QuantumCircuit):
         self.gate_list.append((gate, tuple(qubit_indices), self.gate_num))
         self.calc_sequence.append([(gate, tuple(qubit_indices), self.gate_num)])
         self.gate_num += 1
+
+    def clear_all(self) -> None:
+        self.__init__(self.num_qubits)
 
     '''
     Given an integer state_int, return the bit status of qubit qubit_index

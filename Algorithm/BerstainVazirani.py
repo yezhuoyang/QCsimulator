@@ -7,7 +7,7 @@ import Parameter
 import Circuit
 from typing import List, Union, Any
 import re
-
+from .util import convert_int_to_list
 
 class BVAlgorithm(QuantumAlgorithm):
 
@@ -47,7 +47,7 @@ class BVAlgorithm(QuantumAlgorithm):
         self._b = parameter[1]
         if self._b != 0 and self._b != 1:
             raise ValueError("b has to be 0 or 1")
-        if not (self._a >= 0 and self._a < (1 << (self.num_qubits - 1))):
+        if not (0 <= self._a < (1 << (self.num_qubits - 1))):
             raise ValueError("a out of range")
 
     def convert_int_to_list(self, alginput: int):
@@ -59,7 +59,7 @@ class BVAlgorithm(QuantumAlgorithm):
         return controllist
 
     def compile_func(self) -> None:
-        alist = self.convert_int_to_list(self._a)
+        alist = convert_int_to_list(self.num_qubits-1,self._a)
         for i in range(0, self.num_qubits - 1):
             if alist[i] == 1:
                 self.circuit.add_gate(Gate.CNOT(), [i, self.num_qubits - 1])

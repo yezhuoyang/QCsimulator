@@ -234,6 +234,32 @@ class MultiControlX(QuantumGate):
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
+
+
+
+'''
+Use multi qubit to control another qubit.
+param: act_condition is a list of 0 and 1. For example, for f(001)=1, the act_condition is [0,0,1]
+When we create a MulticontrolZ, the last qubit in the qubit_indices is the controlled one, while the first
+n qubits represent the act_condition 
+'''
+
+
+class MultiControlZ(QuantumGate):
+
+    def __init__(self, numqubits: int, act_condition: List[int]) -> None:
+        super().__init__(num_qubits=numqubits)
+        self.act_condition = act_condition
+        if not len(self.act_condition) == (numqubits-1):
+            raise ValueError("The number of act_condition must be equal to the number of qubits -1.")
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
+
+
+
+
 '''
 Add a layer of all hadamard gate    
 '''
