@@ -88,8 +88,9 @@ circuit.measureAll("0011")
 - [ ] QFFT
 - [ ] Shor's algorithm
 - [ ] HHL algorithm
-- [ ] BerstainVazarani
+- [x] BerstainVazarani
 - [ ] Simon
+- [ ] Quantum phase Estimation
 - [ ] Design Parameter Circuit class
 - [ ] Gradient Calculation
 - [ ] BackPropagation
