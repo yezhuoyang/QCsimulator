@@ -5,7 +5,7 @@ import Parameter
 from Gate import *
 from Gate.Gate import QuantumGate
 from State import QuantumState
-from typing import List, Union, Any
+from typing import List, Union
 import re
 
 
@@ -328,7 +328,8 @@ class NumpyCircuit(QuantumCircuit):
         return matrix
 
     '''
-    Give a list of gates in a column, expand them to the whole matrix
+    Give a list of gates in the same column/layer, expand them to the whole matrix
+    For example, when the list is [H,H,H], it should return the samematrix as all hadmard gate.
     '''
 
     def expand_kron_multi(self, gatelist: List) -> np.ndarray:

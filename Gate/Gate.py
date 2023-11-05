@@ -258,8 +258,27 @@ class MergedGate(QuantumGate):
         if matrix.shape != (N, N):
             raise ValueError("Dimension of matrix is not consistent with qubit number")
         self._matrix = matrix
+
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
     def matrix(self) -> np.ndarray:
         return self._matrix if not self._dagger else self._matrix.conjugate()
+
+
+'''
+Merge the single qubit gate given the list of all gates
+'''
+
+
+def merge_single(gatelist):
+    return
+
+
+'''
+Merge the doubli qubits gate given the list of all gates
+'''
+
+
+def merge_double(gatelist):
+    return
