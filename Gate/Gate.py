@@ -242,3 +242,24 @@ class AllHadamard(QuantumGate):
 
     def qasmstr(self) -> str:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
+
+
+'''
+Quantum gate that has already been merged, but does not belong to any
+normal gate class.
+This class is used in optimization process
+'''
+
+
+class MergedGate(QuantumGate):
+    def __init__(self, numqubits: int, matrix: np.ndarray) -> None:
+        super().__init__(num_qubits=numqubits)
+        N = 1 << numqubits
+        if matrix.shape != (N, N):
+            raise ValueError("Dimension of matrix is not consistent with qubit number")
+        self._matrix = matrix
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
+    def matrix(self) -> np.ndarray:
+        return self._matrix if not self._dagger else self._matrix.conjugate()
