@@ -8,20 +8,21 @@ I wish we could support the fastest qubit simulation to support the future quant
 # Rules of developing and Conventions
 
 
-1.Every function should obey the type checking rules [Blog of Type Checking for Python](https://realpython.com/python-type-checking/)
+## 1. Type Checking
+Every function should obey the type checking rules [Blog of Type Checking for Python](https://realpython.com/python-type-checking/)
 
 
 ```bash
 py -m mypy filetobecheck.py
 ```
 
-
-2. The qubit index is counted from left to right.
+## 2. Qubit index 
+The qubit index is counted from left to right.
    For example, when we are using an integer 0b1101 to denote a 4 qubit state, the first qubit is 1, the second qubit is 1, and the third qubit is zero.
    It should be pointout that
 
-
-3. Every important function should pass at least one unittest.
+## 3. Unit Test
+Every important function should pass at least one unittest.
    This is a unittest example for DJ algorithm
 ```python
 import random
@@ -86,6 +87,7 @@ Example:
 if __name__ == "__main__":
     main()
 ```
+## 3. Annotation
 
 
 
