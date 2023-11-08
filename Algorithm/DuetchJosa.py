@@ -79,3 +79,6 @@ class DuetchJosa(QuantumAlgorithm):
                         Gate.MultiControlX(self.num_qubits, convert_int_to_list(self.num_qubits - 1, i)),
                         [list(range(0, self.num_qubits - 1)), self.num_qubits - 1])
         return
+
+    def is_balance(self):
+        return self.balance
