@@ -7,7 +7,7 @@ import Parameter
 import Circuit
 from typing import List, Union, Any
 import re
-from .util import convert_int_to_list
+from .util import convert_int_to_list, convert_list_to_int
 
 
 class BVAlgorithm(QuantumAlgorithm):
@@ -19,6 +19,7 @@ class BVAlgorithm(QuantumAlgorithm):
         self.computed = False
         self._a = 0
         self._b = 0
+        self.computed_a_value = -1
 
     '''
     The circuit structure is the same as DuetchJosa
@@ -51,14 +52,6 @@ class BVAlgorithm(QuantumAlgorithm):
         if not (0 <= self._a < (1 << (self.num_qubits - 1))):
             raise ValueError("a out of range")
 
-    def convert_int_to_list(self, alginput: int):
-        controllist = []
-        k = alginput
-        for i in range(0, self.num_qubits - 1):
-            controllist.insert(0, k % 2)
-            k = (k >> 1)
-        return controllist
-
     def compile_func(self) -> None:
         alist = convert_int_to_list(self.num_qubits - 1, self._a)
         for i in range(0, self.num_qubits - 1):
@@ -72,4 +65,8 @@ class BVAlgorithm(QuantumAlgorithm):
         self.circuit.compute()
         result = self.circuit.measure(list(range(0, self.num_qubits - 1)))
         self.computed = True
+        self.computed_a_value = convert_list_to_int(self.num_qubits - 1, result)
         print(f"The function is f(x)={result}x+{self._b}")
+
+    def a_result(self) -> int:
+        return self.computed_a_value
