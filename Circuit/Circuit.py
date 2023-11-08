@@ -19,10 +19,8 @@ class QuantumCircuit:
     def clear_all(self) -> None:
         raise NotImplementedError("clear_all must implement clear_all method.")
 
-
     def clear_state(self) -> None:
         raise NotImplementedError("clear_all must implement clear_state method.")
-
 
     '''
     Implement the computation process of the whole circuit.
@@ -90,6 +88,12 @@ class NumpyCircuit(QuantumCircuit):
         self.gate_num = 0
         self.calc_step = 0
         self.Debug = False
+        '''
+        Store the computed matrix for debugging
+        Can remove in the future to save space
+        '''
+        self._matrix = np.identity(1 << num_qubits, Parameter.qtype)
+        self.store_matrix=False
 
     def print_state(self) -> None:
         self.state.show_state()
@@ -435,6 +439,8 @@ class NumpyCircuit(QuantumCircuit):
         if self.Debug:
             print(f"The {self.calc_step} step of calculation, the matrix is \n {matrix}")
         self.state.reset_state(np.matmul(matrix, self.state.state_vector))
+        if self.store_matrix:
+            self._matrix=np.matmul(matrix,self._matrix)
         self.calc_step += 1
         return True
 
@@ -584,6 +590,10 @@ class NumpyCircuit(QuantumCircuit):
 
     def to_qasm(self) -> str:
         return "Not"
+
+    @property
+    def matrix(self):
+        return self._matrix
 
 
 '''

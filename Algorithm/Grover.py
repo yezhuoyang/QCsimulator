@@ -23,6 +23,8 @@ class Grover(QuantumAlgorithm):
         self.grover_step = 1
         self.max_step=10
         self._database = []
+        self._solution=-1
+        self._succeed=False
 
     def construct_circuit(self) -> None:
         self.circuit.add_gate(Gate.AllHadamard(self.num_qubits), list(range(0, self.num_qubits)))
@@ -102,6 +104,8 @@ class Grover(QuantumAlgorithm):
             result = convert_list_to_int(self.num_qubits - 1, result)
             if self._database[result] == 1:
                 self.computed = True
+                self._succeed=True
+                self._solution=result
                 print(f"Found a solution {result}")
                 return
             else:
