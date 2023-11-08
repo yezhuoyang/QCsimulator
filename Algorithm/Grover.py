@@ -6,7 +6,7 @@ from typing import List
 from Algorithm import QuantumAlgorithm
 import Circuit
 import Gate
-from util import convert_int_to_list, convert_list_to_int
+from .util import convert_int_to_list, convert_list_to_int
 
 
 class Grover(QuantumAlgorithm):
@@ -21,10 +21,10 @@ class Grover(QuantumAlgorithm):
         initially set to be 1
         '''
         self.grover_step = 1
-        self.max_step=10
+        self.max_step = 10
         self._database = []
-        self._solution=-1
-        self._succeed=False
+        self._solution = -1
+        self._succeed = False
 
     def construct_circuit(self) -> None:
         self.circuit.add_gate(Gate.AllHadamard(self.num_qubits), list(range(0, self.num_qubits)))
@@ -98,19 +98,26 @@ class Grover(QuantumAlgorithm):
     '''
 
     def compute_result(self) -> None:
+        #print(self._database)
         while not self.computed:
             self.construct_circuit()
             result = self.circuit.measure(list(range(0, self.num_qubits - 1)))
             result = convert_list_to_int(self.num_qubits - 1, result)
+            #print(f"Grover Step：:{self.grover_step}, measure result:{result}")
             if self._database[result] == 1:
                 self.computed = True
-                self._succeed=True
-                self._solution=result
-                print(f"Found a solution {result}")
+                self._succeed = True
+                self._solution = result
+                #print(f"Found a solution {result}")
                 return
             else:
-                self.grover_step=self.grover_step+1
-                if self.grover_step>=self.max_step:
-                    break
+                self.grover_step = self.grover_step + 1
+                if self.grover_step >= self.max_step:
+                    self.grover_step = 1
         if not self.computed:
             print("Algorithm failed!")
+
+
+    @property
+    def solution(self)->int:
+        return self._solution

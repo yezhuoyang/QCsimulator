@@ -93,7 +93,7 @@ class NumpyCircuit(QuantumCircuit):
         Can remove in the future to save space
         '''
         self._matrix = np.identity(1 << num_qubits, Parameter.qtype)
-        self.store_matrix=False
+        self.store_matrix = False
 
     def print_state(self) -> None:
         self.state.show_state()
@@ -126,7 +126,7 @@ class NumpyCircuit(QuantumCircuit):
             '''
             qubit_indices = [qubit_indices]
         elif isinstance(qubit_indices, List):
-            if isinstance(gate, MultiControlX):
+            if isinstance(gate, MultiControlX | MultiControlZ):
                 if not isinstance(qubit_indices[0], List):
                     raise ValueError(
                         "The first element of qubit_indices for multi control qubit gate has to be a List!")
@@ -440,7 +440,7 @@ class NumpyCircuit(QuantumCircuit):
             print(f"The {self.calc_step} step of calculation, the matrix is \n {matrix}")
         self.state.reset_state(np.matmul(matrix, self.state.state_vector))
         if self.store_matrix:
-            self._matrix=np.matmul(matrix,self._matrix)
+            self._matrix = np.matmul(matrix, self._matrix)
         self.calc_step += 1
         return True
 
@@ -492,7 +492,7 @@ class NumpyCircuit(QuantumCircuit):
         '''
         problist = [0] * (1 << l)
         state_vector = self.state_vector()
-        self.state.show_state_dirac()
+        # self.state.show_state_dirac()
         for i in range(0, 1 << self.num_qubits):
             qubit_status_list = self.bit_list(self.num_qubits, i)
             sub_status_list = [qubit_status_list[index] for index in qubit_indices]
@@ -592,7 +592,7 @@ class NumpyCircuit(QuantumCircuit):
         return "Not"
 
     @property
-    def matrix(self):
+    def matrix(self) -> np.ndarray:
         return self._matrix
 
 
