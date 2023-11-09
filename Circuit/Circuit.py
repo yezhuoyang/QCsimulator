@@ -153,8 +153,14 @@ class NumpyCircuit(QuantumCircuit):
         self.calc_sequence.append([(gate, tuple(qubit_indices), self.gate_num)])
         self.gate_num += 1
 
+
+    '''
+    Ready to recalculate the circuit again
+    '''
     def clear_all(self) -> None:
-        self.__init__(self.num_qubits)
+        self.state = QuantumState(qubit_number=self.num_qubits)
+        self.calc_step = 0
+        self._matrix = np.identity(1 << self.num_qubits, Parameter.qtype)
 
     def clear_state(self) -> None:
         self.state = QuantumState(qubit_number=self.num_qubits)
@@ -463,6 +469,8 @@ class NumpyCircuit(QuantumCircuit):
         k = pos
         for i in range(0, num_qubits):
             bit = k % 2
+            if isinstance(k,list):
+                raise ValueError(f"{k} is a list!")
             bitlist.insert(0, int(bit))
             k = (k >> 1)
         return bitlist
