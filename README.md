@@ -154,14 +154,13 @@ circuit.measureAll("0011")
 
 ## Algorithm
 
-- [x] Deutsch's algorithm
-- [x] Berstein Varizani
+- [x] Deutsch Josa algorithm
+- [x] Berstein Varizani algorithm
 - [x] Grover's algorithm
+- [ ] Simon's algorithm
 - [ ] QFFT
 - [ ] Shor's algorithm
 - [ ] HHL algorithm
-- [x] BerstainVazarani
-- [x] Simon
 - [ ] Quantum phase Estimation
 - [ ] Design Parameter Circuit class
 - [ ] Gradient Calculation
@@ -169,6 +168,67 @@ circuit.measureAll("0011")
 - [ ] QAOA algorithm
 - [ ] VQE algorithm
 
+### Example of Deutsch Josa algorithm
+
+```python
+import Algorithm
+alg = Algorithm.DuetchJosa(4)
+# uf is a list that define the function f(x)=uf[x], in this case, f(x) is a constant
+uf = [1, 1, 1, 1, 1, 1, 1, 1]
+alg.set_input(uf)
+alg.construct_circuit()
+alg.compute_result()
+if(alg.balance):
+   print("Balance")
+else:
+   print("Constant")   
+alg.circuit.state.show_state_dirac()
+```
+
+### Example of Berstein Varizani algorithm
+
+```python
+import Algorithm
+alg = Algorithm.BVAlgorithm(9)
+# Initialize a random a and b, such that the input function is f(x)=ax+b
+a=0b10101001
+b=1
+alg.set_input([a,b])
+alg.construct_circuit()
+alg.compute_result()
+print(f"The result is a={alg.solution}")
+alg.circuit.state.show_state_dirac()
+```
+
+
+### Example of Grover's algorithm
+```python
+gvalg = Algorithm.Grover(3)
+# Here, db_uf represent a database. Only the third value is 1
+db_uf = [0,0,1,0,0,0,0,0]
+gvalg.set_input(db_uf)
+gvalg.construct_circuit()
+gvalg.compute_result()
+result = gvalg.solution
+print(f"The key {x} has value one")
+```
+
+
+### Example of Simon's algorithm
+```python
+qubit_num=6
+inputsize = 6 // 2
+n = (1 << (inputsize))
+# We set s=0b101=5
+s = 0b101
+# uf represent the function f(x)=uf[x]
+uf = [7, 5, 0, 6, 5, 7, 6, 0]
+simonalg = Algorithm.Simon(qubit_num)
+simonalg.set_input(uf)
+simonalg.construct_circuit()
+simonalg.compute_result()
+print(f"The solution is {simonalg.solution}")
+```
 
 ## Layout Synthesis
 
