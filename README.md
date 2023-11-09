@@ -155,12 +155,13 @@ circuit.measureAll("0011")
 ## Algorithm
 
 - [x] Deutsch's algorithm
-- [ ] Grover's algorithm
+- [x] Berstein Varizani
+- [x] Grover's algorithm
 - [ ] QFFT
 - [ ] Shor's algorithm
 - [ ] HHL algorithm
 - [x] BerstainVazarani
-- [ ] Simon
+- [x] Simon
 - [ ] Quantum phase Estimation
 - [ ] Design Parameter Circuit class
 - [ ] Gradient Calculation
