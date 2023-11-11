@@ -8,6 +8,7 @@ import fractions
 import random
 import math
 
+
 class Shor(QuantumAlgorithm):
 
     def __init__(self, num_qubits: int) -> None:
@@ -37,12 +38,8 @@ class Shor(QuantumAlgorithm):
             else:
                 r += 1
 
-
-    def order_finding_quantum(self,a:int)->int:
+    def order_finding_quantum(self, a: int) -> int:
         return
-
-
-
 
     '''
     In this implmentation, we only need to return 1 non trivial factor of N
@@ -70,10 +67,8 @@ class Shor(QuantumAlgorithm):
                 continue
             else:
                 succeed = True
-                self._solution=d
+                self._solution = d
 
     @property
     def solution(self):
         return self._solution
-
-
