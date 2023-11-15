@@ -6,7 +6,10 @@ import Circuit
 from .util import convert_int_to_list, convert_list_to_int
 import numpy as np
 import copy
-
+import qiskit
+import functools
+from qiskit_aer import AerSimulator
+from itertools import product
 '''
 Simon's algorithm
 The input is a function f and a number s,
@@ -14,87 +17,66 @@ such that f(x1)==f(x2) iff x1+x2=s of x1==x2
 Our goal is to find such s
 '''
 
+def gaussian_elimination_mod2_with_rank(matrix):
+    """
+    Perform Gaussian elimination on a matrix in a 0,1 field (mod 2 arithmetic) and return its rank.
 
-def gaussian_elimination_mod2(matrix):
-    num_rows, num_cols = matrix.shape
+    Parameters:
+    matrix (np.array): A numpy array representing the matrix.
 
-    # Perform Gaussian elimination to get an upper triangular matrix
-    for col in range(num_cols):
+    Returns:
+    tuple: A tuple containing the rank of the matrix and the matrix after Gaussian elimination.
+    """
+    rows, cols = matrix.shape
+
+    for i in range(min(rows, cols)):
+        # Find a pivot for column i
         pivot_row = None
-        for row in range(col, num_rows):
-            if matrix[row][col] == 1:
-                pivot_row = row
+        for j in range(i, rows):
+            if matrix[j, i] == 1:
+                pivot_row = j
                 break
 
         if pivot_row is None:
             continue
 
-        matrix[[col, pivot_row]] = matrix[[pivot_row, col]]
+        # Swap pivot row into position
+        matrix[[i, pivot_row]] = matrix[[pivot_row, i]]
 
-        # Zero out all other entries in this column
-        for i in range(num_rows):
-            if i != col and matrix[i][col] == 1:
-                matrix[i] = (matrix[i] + matrix[col]) % 2
+        # Eliminate all other 1's in this column
+        for j in range(rows):
+            if j != i and matrix[j, i] == 1:
+                matrix[j] = (matrix[j] + matrix[i]) % 2
 
-    # Back substitution to find the solution vector 's'
-    s = np.zeros(num_cols, dtype=int)  # Initialize solution vector with zeros
+    # Calculate the rank as the number of unique non-zero rows
+    unique_rows = {tuple(row) for row in matrix if np.any(row)}
+    rank = len(unique_rows)
 
-    # Start back substitution
-    for row in range(num_rows - 1, -1, -1):
-        pivot_cols = np.where(matrix[row] == 1)[0]
-        if len(pivot_cols) == 1:
-            # This means we have a pivot, so we can solve for this variable
-            s[pivot_cols[0]] = 1
-            # Zero out above entries
-            for upper_row in range(row):
-                if matrix[upper_row][pivot_cols[0]] == 1:
-                    matrix[upper_row] = (matrix[upper_row] + matrix[row]) % 2
-    print("After gaussion")
-    print(matrix)
-    return s
+    return rank, matrix
 
 
-def gf2_rank(matrix):
+
+
+
+def find_non_trivial_solution(M):
     """
-    Return the rank of a matrix in GF(2), which is the number of non-zero rows after
-    row reduction.
+    Find a non-trivial solution to Mx = 0 in a 0,1 field.
+
+    Parameters:
+    M (np.array): A (n-1) x n matrix in a 0,1 field after Gaussian elimination with rank n-1.
+
+    Returns:
+    np.array: A non-trivial solution vector x.
     """
-    A = np.array(matrix, dtype=np.int64) % 2
-    num_rows, num_cols = A.shape
+    rows, cols = M.shape
 
-    row, col = 0, 0
-    while row < num_rows and col < num_cols:
-        # Find the pivot row and swap
-        for pivot_row in range(row, num_rows):
-            if A[pivot_row, col]:
-                A[[row, pivot_row]] = A[[pivot_row, row]]
-                break
-        else:
-            col += 1
-            continue
+    # Generate all possible non-zero binary vectors of length cols
+    for x in product([0, 1], repeat=cols):
+        x = np.array(x)
+        if np.any(x) and np.all(np.dot(M, x) % 2 == 0):
+            return x
 
-        # Eliminate the column entries below the pivot
-        for lower_row in range(row + 1, num_rows):
-            if A[lower_row, col]:
-                A[lower_row] ^= A[row]
-
-        row += 1
-        col += 1
-
-    # The rank is the number of non-zero rows
-    rank = np.count_nonzero(np.any(A, axis=1))
-    return rank
-
-
-def is_linearly_independent_mod2(vectors):
-    """
-    Check if a list of binary vectors is linearly independent in GF(2).
-    :param vectors: a list of binary vectors
-    :return: True if the list is linearly independent, False otherwise
-    """
-    matrix = np.array(vectors)
-    rank = gf2_rank(matrix)
-    return rank == len(vectors)
+    return None
 
 
 class Simon(QuantumAlgorithm):
@@ -159,16 +141,122 @@ class Simon(QuantumAlgorithm):
             print(f"Generate a new y {result}")
             matrix = copy.copy(y_result)
             matrix.append(result)
-            if is_linearly_independent_mod2(matrix):
+
+            rank, gaus_matrix = gaussian_elimination_mod2_with_rank(np.array(matrix))
+
+            #print(f"new rank= {rank}, marix is \n {matrix},gaus_matrix is  \n {gaus_matrix}")
+            if rank > pre_rank:
                 y_result.append(result)
                 if len(y_result) == (func_dim - 1):
                     enough = True
+                pre_rank = rank
 
         matrix = np.array(y_result)
+        rank, gaus_matrix = gaussian_elimination_mod2_with_rank(np.array(matrix))
         print(matrix)
-        s = gaussian_elimination_mod2(matrix)
-        self._solution = convert_list_to_int(func_dim, s)
+        s = find_non_trivial_solution(gaus_matrix)
+        self._solution = convert_list_to_int(func_dim, list(s))
         print(f"The solution for the given function is s={s}")
+        return
+
+    @property
+    def solution(self):
+        return self._solution
+
+
+class Simon_qiskit(QuantumAlgorithm):
+    def __init__(self, num_qubits: int) -> None:
+        if (num_qubits % 2) != 0:
+            raise ValueError("The number of qubits must be even in Simon problem")
+        super().__init__(num_qubits)
+        self.circuit = qiskit.QuantumCircuit(num_qubits, num_qubits // 2)
+        self.simulator = AerSimulator()
+        self.num_qubits = num_qubits
+        self._solution = -1
+        self.uf = []
+        self._s = 0
+
+    def construct_circuit(self) -> None:
+        '''
+        For convenience, we use Allhadamard gats instead of half of the hadamard. This does not
+        affect the result since we only measure the above half
+        '''
+        inputsize = self.num_qubits // 2
+        for i in range(inputsize):
+            self.circuit.h(i)
+        self.compile_uf()
+        for i in range(inputsize):
+            self.circuit.h(i)
+        self.circuit.measure(list(range(0, inputsize)), list(range(0, inputsize)))
+
+    def set_input(self, uf: List) -> None:
+        func_dim = int(self.num_qubits / 2)
+        if len(uf) != (1 << func_dim):
+            raise ValueError("The input dimension does not match!")
+        self._uf = uf
+
+    def compile_uf(self) -> None:
+        func_dim = self.num_qubits // 2
+        for i in range(len(self._uf)):
+            value = self._uf[i]
+            value_bit = convert_int_to_list(func_dim, value)
+            input_bit = convert_int_to_list(func_dim, i)
+            for j in range(func_dim):
+                '''
+                Only add controlX gate when the function value is 1 
+                '''
+                if value_bit[j] == 1:
+                    if self.num_qubits == 2:
+                        self.circuit.cx(0, 1)
+                    else:
+                        for i in range(0, func_dim):
+                            if input_bit[i] == 0:
+                                self.circuit.x(i)
+                        self.circuit.mcx(control_qubits=list(range(0, func_dim)),
+                                         target_qubit=func_dim + j)
+                        for i in range(0, func_dim):
+                            if input_bit[i] == 0:
+                                self.circuit.x(i)
+        return
+
+    def compute_result(self) -> None:
+        enough = False
+        func_dim = self.num_qubits // 2
+        measure_indices = list(range(0, func_dim))
+        y_result = []
+        pre_rank = 0
+        while not enough:
+            compiled_circuit = qiskit.transpile(self.circuit, self.simulator)
+            # Execute the circuit on the aer simulator
+            job = self.simulator.run(compiled_circuit, shots=1)
+
+            # Grab results from the job
+            result = job.result()
+            # Returns counts
+            counts = result.get_counts(compiled_circuit)
+            result = list(counts.keys())[0]
+            result = result[::-1]
+            result = [int(char) for char in result]
+            #print(f"Generate a new y {result}")
+            matrix = copy.copy(y_result)
+            matrix.append(result)
+            rank, gaus_matrix = gaussian_elimination_mod2_with_rank(np.array(matrix))
+
+            #print(f"new rank= {rank}, marix is \n {matrix},gaus_matrix is  \n {gaus_matrix}")
+            if rank > pre_rank:
+                y_result.append(result)
+                if len(y_result) == (func_dim - 1):
+                    enough = True
+                pre_rank = rank
+
+        matrix = np.array(y_result)
+        #print(matrix)
+        rank, gaus_matrix = gaussian_elimination_mod2_with_rank(matrix)
+
+        #print(f"Final rank= {rank}, marix is \n {matrix},gaus_matrix is  \n {gaus_matrix}")
+        self._solution = find_non_trivial_solution(gaus_matrix)
+        self._solution=convert_list_to_int(func_dim,list(self._solution))
+        print(f"The solution for the given function is s={self._solution}")
         return
 
     @property

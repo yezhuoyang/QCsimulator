@@ -6,7 +6,6 @@ sys.path.append('..')
 import Algorithm
 from Parameter import maximumqubit
 
-alg = Algorithm.Simon(6)
 
 '''
 Generate a ramdom simon's algorithm 
@@ -71,19 +70,29 @@ class TestSimon(unittest.TestCase):
 
 
 
+class TestSimon_qiskit(unittest.TestCase):
+    def test_result(self):
+        for i in range(4, maximumqubit + 1, 2):
+            inputsize = i // 2
+            n = (1 << (inputsize))
+            s = 0
+            while s == 0:
+                s = random.getrandbits(inputsize)
+            print(f"Testing s={s}")
+            uf = generate_random_simon_func(inputsize, s)
+            simonalg = Algorithm.Simon_qiskit(i)
+            simonalg.set_input(uf)
+            simonalg.construct_circuit()
+            simonalg.compute_result()
+            self.assertEqual(simonalg.solution, s)
+
+
+
 def main():
     unittest.main()
 
 
-'''
-Example:
-    alg = Algorithm.DuetchJosa(4)
-    uf = [1, 1, 1, 1, 1, 1, 1, 1]
-    alg.set_input(uf)
-    alg.construct_circuit()
-    alg.compute_result()
-    alg.circuit.state.show_state_dirac()
-'''
+
 
 if __name__ == "__main__":
     main()
