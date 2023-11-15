@@ -42,6 +42,26 @@ class TestGrover(unittest.TestCase):
             self.assertEqual(db_uf[result], 1)
 
 
+class TestGrover_qiskit(unittest.TestCase):
+    def test_grover_success(self):
+        for i in range(2, maximumqubit + 1):
+            gvalg = Algorithm.Grover_qiskit(i)
+            db_uf = generate_random_database(i - 1, 0.1)
+            gvalg.set_input(db_uf)
+            gvalg.construct_circuit()
+            gvalg.compute_result()
+            result = gvalg.solution
+            self.assertEqual(db_uf[result], 1)
+
+
+
+
+
+
+
+
+
+
 def main():
     unittest.main()
 
