@@ -262,3 +262,7 @@ class Simon_qiskit(QuantumAlgorithm):
     @property
     def solution(self):
         return self._solution
+
+
+    def set_simulator(self,simulator):
+        self._simulator=simulator

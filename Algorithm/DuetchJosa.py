@@ -178,3 +178,6 @@ class DuetchJosa_qiskit(QuantumAlgorithm):
 
     def is_balance(self):
         return self.balance
+
+    def set_simulator(self,simulator):
+        self._simulator=simulator

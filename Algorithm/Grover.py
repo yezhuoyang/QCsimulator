@@ -131,8 +131,8 @@ class Grover_qiskit(QuantumAlgorithm):
     def __init__(self, num_qubits: int) -> None:
         super().__init__(num_qubits)
         self.computed = False
-        self.circuit = qiskit.QuantumCircuit(num_qubits, num_qubits-1)
-        self.simulator = AerSimulator()
+        self.circuit = qiskit.QuantumCircuit(num_qubits, num_qubits - 1)
+        self._simulator = AerSimulator()
         self.num_qubits = num_qubits
         '''
         How many time we may need to call the grover operator,
@@ -209,9 +209,9 @@ class Grover_qiskit(QuantumAlgorithm):
 
     def construct_grover_op(self):
         self.construct_zf()
-        self.circuit.h(list(range(0, self.num_qubits-1)))
+        self.circuit.h(list(range(0, self.num_qubits - 1)))
         self.construct_zo()
-        self.circuit.h(list(range(0, self.num_qubits-1)))
+        self.circuit.h(list(range(0, self.num_qubits - 1)))
         return
 
     '''
@@ -233,9 +233,9 @@ class Grover_qiskit(QuantumAlgorithm):
         # print(self._database)
         while not self.computed:
             self.construct_circuit()
-            compiled_circuit = qiskit.transpile(self.circuit, self.simulator)
+            compiled_circuit = qiskit.transpile(self.circuit, self._simulator)
             # Execute the circuit on the aer simulator
-            job = self.simulator.run(compiled_circuit, shots=1)
+            job = self._simulator.run(compiled_circuit, shots=1)
 
             # Grab results from the job
             result = job.result()
@@ -263,3 +263,7 @@ class Grover_qiskit(QuantumAlgorithm):
     @property
     def solution(self) -> int:
         return self._solution
+
+
+    def set_simulator(self,simulator):
+        self._simulator=simulator

@@ -146,3 +146,7 @@ class BVAlgorithm_qiskit(QuantumAlgorithm):
 
     def a_result(self) -> int:
         return self.computed_a_value
+
+
+    def set_simulator(self,simulator):
+        self._simulator=simulator
