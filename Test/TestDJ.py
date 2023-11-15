@@ -46,6 +46,36 @@ class TestDJ(unittest.TestCase):
             self.assertEqual(djalg.is_balance(), True)
 
 
+
+class TestDJ_qiskit(unittest.TestCase):
+    def test_constant(self):
+        for i in range(2, maximumqubit + 1):
+            inputsize = i - 1
+            n = (1 << (inputsize))
+            dice = random.randint(0, 1)
+            uf = [dice] * n
+            djalg = Algorithm.DuetchJosa_qiskit(i)
+            djalg.set_input(uf)
+            djalg.construct_circuit()
+            djalg.compute_result()
+            self.assertEqual(djalg.is_balance(), False)
+
+    def test_balance(self):
+        for i in range(2, maximumqubit + 1):
+            uf = generate_random_balance(i-1)
+            djalg = Algorithm.DuetchJosa_qiskit(i)
+            djalg.set_input(uf)
+            djalg.construct_circuit()
+            djalg.compute_result()
+            self.assertEqual(djalg.is_balance(), True)
+
+
+
+
+
+
+
+
 def main():
     unittest.main()
 
@@ -62,3 +92,4 @@ Example:
 
 if __name__ == "__main__":
     main()
+
