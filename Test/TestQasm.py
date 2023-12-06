@@ -45,7 +45,7 @@ def simulate_by_qiskit(qasmstr):
 
 
 def simulate(qasm_string) -> np.ndarray:
-    simulator = Circuit.NumpyCircuit(1)
+    simulator = Circuit.StateDictCircuit(1)
     simulator.load_qasm(qasm_string)
     simulator.compute()
     return simulator.state_vector()

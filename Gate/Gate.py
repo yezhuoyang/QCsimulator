@@ -14,6 +14,9 @@ class QuantumGate:
     def dagger(self) -> None:
         self._dagger = True
 
+    def is_dagger(self) ->bool:
+        return self._dagger
+
     def qasmstr(self) -> None:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 

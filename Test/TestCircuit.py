@@ -3,6 +3,7 @@ import sys
 sys.path.append('..')
 import Circuit
 import Gate
+
 '''
 C = Circuit.NumpyCircuit(2)
 C.Debug = True
@@ -29,13 +30,10 @@ def test_measure_all():
     return
 
 
-
-
-
-
-
-C = Circuit.NumpyCircuit(3)
-C.Debug = True
-C.add_gate(Gate.Toffoli(), [0,1,2])
+C = Circuit.StateDictCircuit(1)
+g=Gate.TGate()
+g.dagger()
+C.add_gate(Gate.Hadamard(),0)
+C.add_gate(g, 0)
 C.compute()
 C.print_state()

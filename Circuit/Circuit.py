@@ -945,7 +945,7 @@ class StateDictCircuit(QuantumCircuit):
                 qubit_indices = qubit_indices[0]
             qubit_index = int(qubit_indices)
             phase = np.exp(1j * np.pi / 4)
-            if gate.dagger():
+            if gate.is_dagger():
                 phase = np.exp(-1j * np.pi / 4)
             for stateint in self._statedict.keys():
                 if self.bit_is_1(qubit_index, stateint):
