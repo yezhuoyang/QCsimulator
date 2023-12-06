@@ -862,7 +862,7 @@ class StateDictCircuit(QuantumCircuit):
         self.gate_num += 1
 
     @staticmethod
-    def filter_small_value(keyvalue:tuple) -> bool:
+    def filter_small_value(keyvalue: tuple) -> bool:
         key, value = keyvalue
         return abs(value) > 0
 
@@ -936,24 +936,21 @@ class StateDictCircuit(QuantumCircuit):
             for stateint in self._statedict.keys():
                 if self.bit_is_1(control_index, stateint):
                     newstateint = self.flip_bit(target_index, stateint)
-                    if newstateint in self._statedict.keys():
-                        self._statedict[newstateint] += self._statedict[stateint]
-                        self._statedict[stateint] = 0
-                    else:
-                        newstate[newstateint] = self._statedict[stateint]
-                        self._statedict[stateint] = 0
-            self._statedict=self._statedict|newstate
+                    newstate[newstateint]=self._statedict[stateint]
+                else:
+                    newstate[stateint] = self._statedict[stateint]
+            self._statedict = newstate
         elif isinstance(gate, TGate):
             if isinstance(qubit_indices, tuple):
                 qubit_indices = qubit_indices[0]
             qubit_index = int(qubit_indices)
-            phase = np.exp(1j*np.pi / 4)
+            phase = np.exp(1j * np.pi / 4)
             if gate.dagger():
-                phase = np.exp(-1j*np.pi / 4)
+                phase = np.exp(-1j * np.pi / 4)
             for stateint in self._statedict.keys():
                 if self.bit_is_1(qubit_index, stateint):
                     self._statedict[stateint] *= phase
-        self._statedict= dict(filter(self.filter_small_value, self._statedict.items()))
+        self._statedict = dict(filter(self.filter_small_value, self._statedict.items()))
         self.calc_step += 1
         return True
 
