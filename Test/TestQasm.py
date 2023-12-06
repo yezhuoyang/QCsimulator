@@ -2,13 +2,22 @@ import sys
 from qiskit import execute
 from qiskit import QuantumCircuit, Aer
 import numpy as np
-
-import Parameter
+import time
+from memory_profiler import memory_usage
 
 sys.path.append('..')
 import Circuit
 from pathlib import Path
 from colorama import Fore
+import tracemalloc
+import Parameter
+import linecache
+from threading import Thread
+
+def profile_simulation(func, *args):
+    """Function to profile memory usage of a simulation function."""
+    mem_usage = memory_usage((func, args), max_usage=True)
+    return mem_usage
 
 
 def read_qasmfile(path):
@@ -23,11 +32,11 @@ reverse it back before comparing with our result
 
 
 def reorder(state_vector, num_qubits):
-    new_state = np.zeros(1 << num_qubits,dtype=Parameter.qtype)
+    new_state = np.zeros(1 << num_qubits, dtype=Parameter.qtype)
     for i in range(0, 1 << num_qubits):
         binary_string = "{0:b}".format(i)
-        if len(binary_string)<num_qubits:
-            binary_string='0'*(num_qubits-len(binary_string))+binary_string
+        if len(binary_string) < num_qubits:
+            binary_string = '0' * (num_qubits - len(binary_string)) + binary_string
         newString = reversed(binary_string)
         newString = "".join(newString)
         new_state[int(newString, 2)] = state_vector[i]
@@ -45,6 +54,7 @@ def simulate_by_qiskit(qasmstr):
 
 
 def simulate(qasm_string) -> np.ndarray:
+    #simulator = Circuit.NumpyCircuit(1)
     simulator = Circuit.StateDictCircuit(1)
     simulator.load_qasm(qasm_string)
     simulator.compute()
@@ -62,29 +72,73 @@ def compare(state_vector, qiskit_state_vector):
         Some value influencing your grade, subject to change :)
     """
     fidelity = np.inner(state_vector, qiskit_state_vector)
-    fidelity=fidelity*fidelity.conjugate()
+    fidelity = fidelity * fidelity.conjugate()
     return fidelity, np.all(np.isclose(state_vector, qiskit_state_vector))
 
 
-# get the directory of qasm files and make sure it's a directory
-qasm_dir = Path("C:/Users/yezhu/PycharmProjects/QCsimulator/Test/naiveqasm")
-assert qasm_dir.is_dir()
+def display_top(snapshot, key_type='lineno', limit=10):
+    snapshot = snapshot.filter_traces((
+        tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+        tracemalloc.Filter(False, "< frozen importlib._bootstrap_external >"),
+        tracemalloc.Filter(False, "<unknown>"),
+        tracemalloc.Filter(False, "<frozen abc>"),
+    ))
+    top_stats = snapshot.statistics(key_type)
 
-# iterate the qasm files in the directory
-for qasm_file in qasm_dir.glob("**/*.qasm"):
-    # read the qasm file
+    print("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        print("#%s: %s:%s: %.1f KiB"
+              % (index, frame.filename, frame.lineno, stat.size / 1024))
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            print('    %s' % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        print("%s other: %.1f KiB" % (len(other), size / 1024))
+    total = sum(stat.size for stat in top_stats)
+    print("Total allocated size: %.1f KiB" % (total / 1024))
 
 
-    with open(qasm_file, "r") as f:
-        qasm_string = f.read()
+def main():
+    # get the directory of qasm files and make sure it's a directory
+    qasm_dir = Path("C:/Users/yezhu/PycharmProjects/QCsimulator/Test/singleqasm")
+    assert qasm_dir.is_dir()
 
-    # run your simulate function on the qasm string
-    state_vector = simulate(qasm_string)
-    # run cirq's simulator on the qasm string
-    qiskit_state_vector = simulate_by_qiskit(qasm_string)
-    # compare the results!
-    fidelity, passed = compare(state_vector, qiskit_state_vector)
-    if passed:
-        print(Fore.GREEN + f"Congradulations! You pass the test file \"{qasm_file.name}\" with fidelity {fidelity}")
-    else:
-        print(Fore.RED + f"Sorry, you fail to pass the test file \"{qasm_file.name}\" with fidelity {fidelity}")
+    # iterate the qasm files in the directory
+    for qasm_file in qasm_dir.glob("**/*.qasm"):
+        # read the qasm file
+
+        with open(qasm_file, "r") as f:
+            qasm_string = f.read()
+
+
+        #tracemalloc.reset_peak()
+        time_start = time.perf_counter()
+        tracemalloc.start()
+        state_vector = simulate(qasm_string)
+        #first_size, first_peak = tracemalloc.get_traced_memory()
+        snapshot = tracemalloc.take_snapshot()
+        #display_top(snapshot)
+        time_elapsed1 = (time.perf_counter() - time_start)
+        tracemalloc.stop()
+
+
+        time_start = time.perf_counter()
+        qiskit_state_vector = simulate_by_qiskit(qasm_string)
+        time_elapsed2 = (time.perf_counter() - time_start)
+        print("(Your simulator)%5.5f secs, (Qiskit)%5.5f secs" % (time_elapsed1,time_elapsed2))
+
+        # compare the results!
+        fidelity, passed = compare(state_vector, qiskit_state_vector)
+        if passed:
+            print(Fore.GREEN + f"Congradulations! You pass the test file \"{qasm_file.name}\" with fidelity {fidelity}")
+        else:
+            print(Fore.RED + f"Sorry, you fail to pass the test file \"{qasm_file.name}\" with fidelity {fidelity}")
+        print(Fore.WHITE)
+
+if __name__ == '__main__':
+    sys.path.append('..')
+    main()
