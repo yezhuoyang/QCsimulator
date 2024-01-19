@@ -95,6 +95,10 @@ class NumpyCircuit(QuantumCircuit):
         self._matrix = np.identity(1 << num_qubits, Parameter.qtype)
         self.store_matrix = False
 
+
+    def set_store(self,store:bool):
+        self.store_matrix=store
+
     def print_state(self) -> None:
         self.state.show_state()
 
@@ -157,8 +161,12 @@ class NumpyCircuit(QuantumCircuit):
     '''
     Ready to recalculate the circuit again
     '''
+
     def clear_all(self) -> None:
         self.state = QuantumState(qubit_number=self.num_qubits)
+        self.gate_list=[]
+        self.calc_sequence=[]
+        self.gate_num=0
         self.calc_step = 0
         self._matrix = np.identity(1 << self.num_qubits, Parameter.qtype)
 
@@ -192,6 +200,10 @@ class NumpyCircuit(QuantumCircuit):
         I = np.matmul(matrix.conjugate(), matrix)
         eye = np.eye(1 << dimension, dtype=Parameter.qtype)
         return np.allclose(I, eye, atol=0.1)
+
+
+    def equal_result(self, other: QuantumGate) -> bool:
+        return np.allclose(self._matrix, other.matrix, atol=0.0001)
 
     '''
     Given a quantum gate on single qubit, expand the whole matrix
@@ -466,12 +478,12 @@ class NumpyCircuit(QuantumCircuit):
 
     def bit_list(self, num_qubits: int, pos: int):
         bitlist = []
-        k = pos
+        k = int(pos)
         for i in range(0, num_qubits):
             bit = k % 2
-            if isinstance(k,list):
+            if isinstance(k, list):
                 raise ValueError(f"{k} is a list!")
-            bitlist.insert(0, int(bit))
+            bitlist.insert(0, bit)
             k = (k >> 1)
         return bitlist
 

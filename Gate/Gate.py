@@ -18,6 +18,21 @@ class QuantumGate:
         raise NotImplementedError("Subclasses must implement qasmstr method.")
 
 
+class Identity(QuantumGate):
+    def __init__(self) -> None:
+        super().__init__(num_qubits=1)
+
+    def matrix(self) -> np.ndarray:
+        # Define the Hadamard matrix for a single qubit
+        identity = np.array([[1, 0], [0, 1]], dtype=Parameter.qtype)
+        return identity
+
+    def qasmstr(self) -> str:
+        raise NotImplementedError("Subclasses must implement qasmstr method.")
+
+    def __str__(self) -> str:
+        return "Identity"
+
 class Hadamard(QuantumGate):
     def __init__(self) -> None:
         super().__init__(num_qubits=1)
