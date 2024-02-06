@@ -10,9 +10,6 @@ from typing import List, Union, Any
 
 
 
-
-
-
 class PhaseAmplification(QuantumAlgorithm):
     def __init__(self, num_qubits: int) -> None:
         super().__init__(num_qubits)

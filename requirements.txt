@@ -1,0 +1,6 @@
+numpy~=1.26.2
+qiskit~=0.45.1
+colorama~=0.4.6
+cirq~=1.2.0
+networkx~=3.2.1
+torch~=2.1.0+cu121
