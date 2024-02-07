@@ -17,6 +17,10 @@ class QuantumAlgorithm:
     def construct_circuit(self) -> NotImplementedError:
         raise NotImplementedError("Subclasses must implement construct_circuit method.")
 
+    def clear_circuit(self) -> NotImplementedError:
+        raise NotImplementedError("Subclasses must implement construct_circuit method.")
+
+
     def set_input(self, alginput: List) -> NotImplementedError:
         raise NotImplementedError("Subclasses must implement set_input method.")
 
