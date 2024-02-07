@@ -92,6 +92,7 @@ class QPhe_qiskit(QuantumAlgorithm):
         if self._constructed:
             return
         self._circuit.h(list(range(0, self.num_counts)))
+        self._circuit.x(list(range(self.num_counts,self.num_counts+self.num_qubits)))
         counts_qindeices = list(range(0, self.num_counts))
         rot_unitary_qindeices = list(range(self.num_counts, self.num_counts + self.num_qubits))
         for index in range(0, self.num_counts):
@@ -119,7 +120,6 @@ class QPhe_qiskit(QuantumAlgorithm):
         compiled_circuit = qiskit.transpile(self._circuit, self._simulator)
         # Execute the circuit on the aer simulator
         job = self._simulator.run(compiled_circuit, shots=1)
-
         # Grab results from the job
         result = job.result()
         # Returns counts
