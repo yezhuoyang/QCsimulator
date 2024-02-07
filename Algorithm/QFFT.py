@@ -31,21 +31,35 @@ class QFFT_qiskit(QuantumAlgorithm):
         self._circuit = qiskit.QuantumCircuit(num_qubits, num_qubits)
         self._simulator = AerSimulator()
         self.num_qubits = num_qubits
+        self._inverse = False
 
     @property
     def circuit(self) -> qiskit.QuantumCircuit:
         return self._circuit
 
+    @property
+    def inverse(self):
+        return self._inverse
+
+    @inverse.setter
+    def inverse(self, value: bool):
+        self._inverse = value
 
     '''    
            1    0
     Rz(k)=
            0    e^{i 2pi/2^{k}} 
     '''
-    def construct_circuit(self):
-        for row in range(0, self.num_qubits):
-            self._circuit.append(HGate(), [row])
-            for k in range(2, self.num_qubits + 1-row):
-                self._circuit.append(U1Gate(2 * np.pi / (2 ** k)).control(1), [row+k - 1, row])
-        return
 
+    def construct_circuit(self):
+        if not self._inverse:
+            for row in range(0, self.num_qubits):
+                self._circuit.append(HGate(), [row])
+                for k in range(2, self.num_qubits + 1 - row):
+                    self._circuit.append(U1Gate(2 * np.pi / (2 ** k)).control(1), [row + k - 1, row])
+        else:
+            for row in range(self.num_qubits - 1, -1, -1):
+                for k in range(self.num_qubits - row, 1, -1):
+                    self._circuit.append(U1Gate(2 * np.pi / (2 ** k)).control(1), [row + k - 1, row])
+                self._circuit.append(HGate(), [row])
+        return
