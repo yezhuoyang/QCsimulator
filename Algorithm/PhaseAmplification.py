@@ -177,7 +177,7 @@ class PhaseAmplification(QuantumAlgorithm):
         result = job.result()
         # Returns counts
         counts = result.get_counts(compiled_circuit)
-        print(counts)
+        # print(counts)
         result = list(counts.keys())[0]
 
         self._computed = False
@@ -206,7 +206,7 @@ class PhaseAmplification(QuantumAlgorithm):
         result = job.result()
         # Returns counts
         counts = result.get_counts(compiled_circuit)
-        print(counts)
+        # print(counts)
         succcess_num = 0
 
         for key in counts.keys():
@@ -230,7 +230,8 @@ from qiskit.circuit.library.standard_gates import HGate, TGate, XGate, SdgGate, 
 from qiskit.circuit.library import UnitaryGate
 import numpy as np
 
-if __name__ == "__main__":
+
+def three_qubit_example():
     B = PhaseAmplification(3)
     B.set_input([0, 0, 0, 1])
     matrix = np.array([[1, -1j], [-1j, 1]] / np.sqrt(2))
@@ -240,8 +241,55 @@ if __name__ == "__main__":
     GateList = [(HGate(), [0]), (HGate(), [1]), (Csdg_1, [0, 2]), (Csdg_2, [0, 1, 2]), (Rgate, [0]),
                 (Rgate, [1])]
     B.set_baseline(GateList)
-
     for step in range(0, 3):
         B.phaseampli_step = step
         rate = B.calc_success_rate(200)
         print("Step: %d,  Rate: %.2f  " % (step, rate))
+    return
+
+
+def five_qubit_example():
+    B = PhaseAmplification(5)
+    B.set_input([0] * (2 ** 4 - 1) + [1])
+    matrix = np.array([[1, -1j], [-1j, 1]] / np.sqrt(2))
+    Rgate = UnitaryGate(matrix, label="R")
+    Csdg_1 = SdgGate().control(1)
+    Csdg_2 = SdgGate().control(2)
+    Csdg_3 = SdgGate().control(3)
+    Csdg_4 = SdgGate().control(4)
+    GateList = [(HGate(), [0]), (HGate(), [1]), (Csdg_1, [0, 4]), (Csdg_2, [0, 1, 4]), (Csdg_3, [0, 1, 2, 4]),
+                (Csdg_4, [0, 1, 2, 3, 4]), (Rgate, [0]), (Rgate, [1]), (Rgate, [2]), (Rgate, [3])]
+    B.set_baseline(GateList)
+    for step in range(0, 20):
+        B.phaseampli_step = step
+        rate = B.calc_success_rate(200)
+        print("Step: %d,  Rate: %.2f  " % (step, rate))
+    return
+
+
+def eight_qubit_example():
+    B = PhaseAmplification(8)
+    B.set_input([0] * (2 ** 7 - 1) + [1])
+    matrix = np.array([[1, -1j], [-1j, 1]] / np.sqrt(2))
+    Rgate = UnitaryGate(matrix, label="R")
+    Csdg_1 = SdgGate().control(1)
+    Csdg_2 = SdgGate().control(2)
+    Csdg_3 = SdgGate().control(3)
+    Csdg_4 = SdgGate().control(4)
+    Csdg_5 = SdgGate().control(5)
+    Csdg_6 = SdgGate().control(6)
+    Csdg_7 = SdgGate().control(7)
+    GateList = [(HGate(), [0]), (HGate(), [1]), (Csdg_1, [0, 4]), (Csdg_2, [0, 1, 7]), (Csdg_3, [0, 1, 2, 7]),
+                (Csdg_4, [0, 1, 2, 3, 7]),(Csdg_5, [0, 1, 2, 3, 4,7]),(Csdg_6, [0, 1, 2, 3, 4,5,7]),(Csdg_7, [0, 1, 2, 3, 4,5,6,7]),
+                (Rgate, [0]), (Rgate, [1]), (Rgate, [2]), (Rgate, [3]), (Rgate, [4]),(Rgate, [5]),(Rgate, [6]), (Rgate, [7])]
+    B.set_baseline(GateList)
+    for step in range(0, 10):
+        B.phaseampli_step = step
+        rate = B.calc_success_rate(200)
+        print("Step: %d,  Rate: %.2f  " % (step, rate))
+    return
+
+
+if __name__ == "__main__":
+    #five_qubit_example()
+    eight_qubit_example()
