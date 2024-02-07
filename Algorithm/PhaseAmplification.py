@@ -22,7 +22,7 @@ class PhaseAmplification(QuantumAlgorithm):
         How many time we may need to call the phaseampli operator,
         initially set to be 1
         '''
-        self.phaseampli_step = 1
+        self._phaseampli_step = 1
         self.max_step = 10
         self._database = []
         self._solution = -1
@@ -34,7 +34,7 @@ class PhaseAmplification(QuantumAlgorithm):
         '''
         Construct phaseampli circuit many times
         '''
-        for i in range(self.phaseampli_step):
+        for i in range(self._phaseampli_step):
             self.construct_phaseampli_op()
         self.circuit.measure(list(range(0, self.num_qubits - 1)), list(range(0, self.num_qubits - 1)))
         return
@@ -121,6 +121,11 @@ class PhaseAmplification(QuantumAlgorithm):
 
 
 
+    def set_phaseampli_step(self,step:int):
+        self._phaseampli_step=step
+
+
+
     '''
     The input of phaseampli  is the value stored in the 
     unstructured database
@@ -157,11 +162,23 @@ class PhaseAmplification(QuantumAlgorithm):
             self.computed = True
             self._succeed = True
             self._solution = result
-            print(f"Found a solution {result}, Phaseampli Step={self.phaseampli_step}")
+            print(f"Found a solution {result}, Phaseampli Step={self._phaseampli_step}")
         else:
             print("Algorithm failed!")
 
         return
+
+
+
+    '''
+    Calculate the succcess rate before and after phase amplification
+    So we can compare the two results and understand the effect of phase amplification.
+    '''
+    def calc_success_rate(self):
+        return
+
+
+
 
     @property
     def solution(self) -> int:
