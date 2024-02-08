@@ -6,15 +6,9 @@ import State
 import numpy as np
 
 
+import State, Parameter
+import numpy as np
+
 S=State.QuantumState(np.array([0.7j,0.7],dtype=Parameter.qtype))
-S1=State.QuantumState(np.array([1j,0],dtype=Parameter.qtype))
-
-
-S2=S.tensor_product(S1)
-
-
-S2.show_state_dirac()
-
-
-print(abs(S2.state_vector[int("01", 2)])**2)
-
+S.normalize()
+S.show_state_dirac()

@@ -1,14 +1,11 @@
 from typing import List
 
 from Algorithm import QuantumAlgorithm
-
 '''
-Implementation of the Harrow–Hassidim–Lloyd algorithm
+Quantum principle analysis algorithm
 '''
 
-
-
-class HHL(QuantumAlgorithm):
+class QPCA(QuantumAlgorithm):
 
     def __init__(self, num_qubits: int) -> None:
         super().__init__(num_qubits)
@@ -24,8 +21,7 @@ class HHL(QuantumAlgorithm):
         raise NotImplementedError("Subclasses must implement compute_result method.")
 
 
-
-class HHL_qiskit(QuantumAlgorithm):
+class QPCA_qiskit(QuantumAlgorithm):
 
     def __init__(self, num_qubits: int) -> None:
         super().__init__(num_qubits)
