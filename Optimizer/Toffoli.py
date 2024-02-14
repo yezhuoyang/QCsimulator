@@ -3,7 +3,7 @@ from qiskit import execute
 import functools
 from qiskit_aer import AerSimulator as Aer
 from qiskit.circuit.library.standard_gates import HGate, CXGate, TGate, TdgGate, CCXGate, RZGate, RXGate, RYGate, \
-    CSdgGate, CSGate, U1Gate
+    CSdgGate, CSGate, U1Gate, CU3Gate
 from Gate.Gate import Toffoli
 import qiskit.quantum_info as qi
 import numpy as np
@@ -64,6 +64,7 @@ def five_two_qubit_solution_1(params):
     circuit = qiskit.QuantumCircuit(3)
 
     circuit.append(HGate(), [2])
+
     circuit.append(CXGate(), [0, 1])
 
     circuit.append(RXGate(params[0]), [0])
@@ -87,9 +88,6 @@ def five_two_qubit_solution_1(params):
     circuit.append(CXGate(), [0, 1])
     circuit.append(HGate(), [2])
     return circuit
-
-
-
 
 
 '''
@@ -116,6 +114,28 @@ def five_two_qubit_solution_2(params):
     circuit.append(U1Gate(params[3]), [2])
 
     circuit.append(HGate(), [2])
+    return circuit
+
+
+'''
+Five two qubit gate 
+'''
+
+
+def five_two_qubit_solution_3(params):
+    circuit = qiskit.QuantumCircuit(3)
+    circuit.append(HGate(), [0])
+
+    circuit.append(CU3Gate(params[0], params[1], params[2]), [0, 1])
+
+    circuit.append(CU3Gate(params[3], params[4], params[5]), [2, 1])
+
+    circuit.append(CU3Gate(params[6], params[7], params[8]), [0, 1])
+
+    circuit.append(CU3Gate(params[9], params[10], params[11]), [2, 1])
+
+    circuit.append(CU3Gate(params[12], params[13], params[14]), [0, 1])
+    circuit.append(HGate(), [0])
     return circuit
 
 
@@ -154,7 +174,7 @@ def norm_2_distance(matrix1: np.ndarray, matrix2: np.ndarray):
 
 
 def loss(params):
-    dis = hilbert_schmidt_distance(get_matrix(five_two_qubit_solution_2(params)), correct_matrix())
+    dis = hilbert_schmidt_distance(get_matrix(five_two_qubit_solution_3(params)), correct_matrix())
     print(dis)
     return dis
 
@@ -165,9 +185,9 @@ Optimize and output the bset solution
 
 
 def optimize():
-    params = np.random.uniform(low=0, high=2 * np.pi, size=4)
+    params = np.random.uniform(low=0, high=2 * np.pi, size=15)
     # params = [np.pi / 4, np.pi / 4]
-    bounds = [(0, 2 * np.pi) for _ in range(4)]
+    bounds = [(0, 2 * np.pi) for _ in range(15)]
     res = minimize(loss, params, method="COBYLA", bounds=bounds)
     print(res.x)
     return res.x
@@ -175,8 +195,3 @@ def optimize():
 
 if __name__ == "__main__":
     params = optimize()
-    print(get_matrix(four_two_qubit_solution(params)))
-
-    print(correct_matrix())
-
-    print(get_matrix(standard_solution()))
