@@ -10,8 +10,6 @@ import qiskit.quantum_info as qi
 from qiskit.circuit.library.standard_gates import XGate, RYGate
 
 
-
-
 def norm_2_distance(matrix1: np.ndarray, matrix2: np.ndarray):
     return np.sum((matrix1 - matrix2) ** 2)
 
@@ -127,8 +125,8 @@ class BlockEncoding_qiskit(QuantumAlgorithm):
     Return the accuracy for block encoding
     '''
 
-    def accuracy(self):
-        return 1-norm_2_distance(self.compute_result(),self.get_BCM())
+    def norm2_error(self):
+        return norm_2_distance(self.compute_result(), self.get_BCM())
 
 
 class BlockEncoding(QuantumAlgorithm):
@@ -154,12 +152,9 @@ if __name__ == "__main__":
     final_matrix_BC3 = BCM3.compute_result()
     print("--------------The BCM3(0.2,0.3,0.4) result--------------------------")
     print(final_matrix_BC3)
-    print("--------------Fidelity calculated by matrix 2 norm-------------------")
-    print(BCM3.accuracy())
+    print("--------------Error calculated by matrix 2 norm-------------------")
+    print(BCM3.norm2_error())
     print("---------------The end-------------------------")
-
-
-
 
     BC4 = BlockEncoding_qiskit(2, 4)
     BC4.set_input([0.2, 0.3, 0.4])
@@ -168,6 +163,17 @@ if __name__ == "__main__":
     final_matrix_BC4 = BC4.compute_result()
     print("--------------The BCM4(0.2,0.3,0.4) result--------------------------")
     print(final_matrix_BC4)
-    print("--------------Fidelity calculated by matrix 2 norm-------------------")
-    print(BC4.accuracy())
+    print("--------------Error calculated by matrix 2 norm-------------------")
+    print(BC4.norm2_error())
+    print("---------------The end-------------------------")
+
+    BC4 = BlockEncoding_qiskit(2, 6)
+    BC4.set_input([0.2, 0.3, 0.4])
+    print("------------The target matrix----------------------------")
+    print(BC4.get_BCM())
+    final_matrix_BC4 = BC4.compute_result()
+    print("--------------The BCM4(0.2,0.3,0.4) result--------------------------")
+    print(final_matrix_BC4)
+    print("--------------Error calculated by matrix 2 norm-------------------")
+    print(BC4.norm2_error())
     print("---------------The end-------------------------")
