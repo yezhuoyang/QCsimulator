@@ -116,9 +116,88 @@ class HamiltonianSimulation_ZZX_qiskit(QuantumAlgorithm):
 
 
 if __name__ == "__main__":
-    XXZ = HamiltonianSimulation_ZZX_qiskit(2)
-    XXZ.set_input([1, 1], 100, 1)
-    XXZ.construct_circuit()
-    print(XXZ.get_exact_unitary(20))
+    step_list = list(range(1, 20, 1))
+    distance_list_2 = []
+    distance_list_4 = []
+    distance_list_6 = []
+    distance_list_8 = []
+    distance_list_10 = []
 
-    print(XXZ.compute_result())
+    for step in step_list:
+        XXZ = HamiltonianSimulation_ZZX_qiskit(2)
+        XXZ.set_input([1, 1], step, 1)
+        XXZ.construct_circuit()
+        XXZ.get_exact_unitary(100)
+        print("Step%d" % step)
+        distance = XXZ.get_2_norm()
+        distance_list_2.append(distance)
+        print(distance)
+
+    for step in step_list:
+        XXZ = HamiltonianSimulation_ZZX_qiskit(4)
+        XXZ.set_input([1, 1, 1, 1], step, 1)
+        XXZ.construct_circuit()
+        XXZ.get_exact_unitary(100)
+        print("Step%d" % step)
+        distance = XXZ.get_2_norm()
+        distance_list_4.append(distance)
+        print(distance)
+
+    for step in step_list:
+        XXZ = HamiltonianSimulation_ZZX_qiskit(6)
+        XXZ.set_input([1, 1, 1, 1, 1, 1], step, 1)
+        XXZ.construct_circuit()
+        XXZ.get_exact_unitary(100)
+        print("Step%d" % step)
+        distance = XXZ.get_2_norm()
+        distance_list_6.append(distance)
+        print(distance)
+
+    for step in step_list:
+        XXZ = HamiltonianSimulation_ZZX_qiskit(8)
+        XXZ.set_input([1, 1, 1, 1, 1, 1, 1, 1], step, 1)
+        XXZ.construct_circuit()
+        XXZ.get_exact_unitary(100)
+        print("Step%d" % step)
+        distance = XXZ.get_2_norm()
+        distance_list_8.append(distance)
+        print(distance)
+
+    for step in step_list:
+        XXZ = HamiltonianSimulation_ZZX_qiskit(10)
+        XXZ.set_input([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], step, 1)
+        XXZ.construct_circuit()
+        XXZ.get_exact_unitary(100)
+        print("Step%d" % step)
+        distance = XXZ.get_2_norm()
+        distance_list_8.append(distance)
+        print(distance)
+    '''
+    Plot the result
+    '''
+    import matplotlib.pyplot as plt
+    plt.scatter(step_list, distance_list_2, label="2 qubit ZZX H model")
+    plt.plot(step_list, distance_list_2)
+
+    plt.scatter(step_list, distance_list_4, label="4 qubit ZZX H model")
+    plt.plot(step_list, distance_list_4)
+
+    plt.scatter(step_list, distance_list_6, label="6 qubit ZZX H model")
+    plt.plot(step_list, distance_list_6)
+
+    plt.scatter(step_list, distance_list_8, label="8 qubit ZZX H model")
+    plt.plot(step_list, distance_list_8)
+
+    plt.scatter(step_list, distance_list_10, label="10 qubit ZZX H model")
+    plt.plot(step_list, distance_list_10)
+
+    plt.title("2-norm distance VS step size of Hamiltonian simulation")
+    plt.xticks(step_list)
+    plt.xlabel("Step size")
+    plt.ylabel("2-Norm error")
+    plt.grid(True)
+    plt.legend()
+    plt.savefig("2NormCompare.png")
+
+
+
