@@ -45,22 +45,12 @@ class HamiltonianSimulation_ZZX_qiskit(QuantumAlgorithm):
         super().__init__(num_qubits)
         self._num_qubits = num_qubits
         self.circuit = qiskit.QuantumCircuit(self._num_qubits, self._num_qubits)
-        self.Hcircuit = qiskit.QuantumCircuit(self._num_qubits, self._num_qubits)
         self._constructed = False
         self._glist = [1] * num_qubits
         self._step = 10
         self._evolve_time = 0
 
     def construct_circuit(self):
-        Xmatrix = np.array([[0, 1],
-                            [1, 0]])
-        Zmatrix = np.array([[1, 0],
-                            [0, -1]])
-        for qindex in range(0, self._num_qubits - 1):
-            self.Hcircuit.append(UnitaryGate(-1 * Zmatrix), [qindex + 1])
-            self.Hcircuit.append(ZGate(), [qindex + 1])
-            self.Hcircuit.append(UnitaryGate(self._glist[qindex] * Xmatrix), [qindex])
-
         for i in range(0, self._step):
             for qindex in range(0, self._num_qubits - 1):
                 self.construct_ZZ(qindex)
@@ -94,8 +84,20 @@ class HamiltonianSimulation_ZZX_qiskit(QuantumAlgorithm):
     '''
 
     def get_exact_unitary(self, order: int):
-        op = qi.Operator(self.Hcircuit)
-        Hmatrix = np.array(op)
+        Xmatrix = np.array([[0, 1],
+                            [1, 0]])
+        Zmatrix = np.array([[1, 0],
+                            [0, -1]])
+        Hmatrix=np.zeros((2 ** self._num_qubits, 2 ** self._num_qubits), dtype=complex)
+        for qindex in range(0, self._num_qubits - 1):
+            Hcircuit=qiskit.QuantumCircuit(self._num_qubits, self._num_qubits)
+            Hcircuit.append(UnitaryGate(-1 * Zmatrix), [qindex + 1])
+            Hcircuit.append(ZGate(), [qindex])
+            op_zz = np.array(qi.Operator(Hcircuit))
+            Hcircuit = qiskit.QuantumCircuit(self._num_qubits, self._num_qubits)
+            Hcircuit.append(UnitaryGate(self._glist[qindex] * Xmatrix), [qindex])
+            op_x = np.array(qi.Operator(Hcircuit))
+            Hmatrix=Hmatrix+op_zz+op_x
         coefficient = 1
         temp_mat = np.identity(2 ** self._num_qubits, dtype=complex)
         umatrix = np.zeros((2 ** self._num_qubits, 2 ** self._num_qubits), dtype=complex)
@@ -115,8 +117,8 @@ class HamiltonianSimulation_ZZX_qiskit(QuantumAlgorithm):
 
 if __name__ == "__main__":
     XXZ = HamiltonianSimulation_ZZX_qiskit(2)
-    XXZ.set_input([1, 1], 2, 1)
+    XXZ.set_input([1, 1], 100, 1)
     XXZ.construct_circuit()
-    print(XXZ.get_exact_unitary(10))
+    print(XXZ.get_exact_unitary(20))
 
     print(XXZ.compute_result())
