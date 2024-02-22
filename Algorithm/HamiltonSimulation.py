@@ -40,7 +40,7 @@ Simulate the hamiltonian
 '''
 
 
-class HamiltonianSimulation_XXZ_qiskit(QuantumAlgorithm):
+class HamiltonianSimulation_ZZX_qiskit(QuantumAlgorithm):
     def __init__(self, num_qubits: int):
         super().__init__(num_qubits)
         self._num_qubits = num_qubits
@@ -114,7 +114,7 @@ class HamiltonianSimulation_XXZ_qiskit(QuantumAlgorithm):
 
 
 if __name__ == "__main__":
-    XXZ = HamiltonianSimulation_XXZ_qiskit(2)
+    XXZ = HamiltonianSimulation_ZZX_qiskit(2)
     XXZ.set_input([1, 1], 2, 1)
     XXZ.construct_circuit()
     print(XXZ.get_exact_unitary(10))
