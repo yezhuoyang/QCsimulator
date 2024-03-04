@@ -76,7 +76,11 @@ class DuetchJosa(QuantumAlgorithm):
         for i in range(0, 1 << (self.num_qubits - 1)):
             if self.UF[i] == 1:
                 if self.num_qubits == 2:
+                    if i == 0:
+                        self.circuit.add_gate(Gate.PauliX(), [i])
                     self.circuit.add_gate(Gate.CNOT(), [0, 1])
+                    if i == 0:
+                        self.circuit.add_gate(Gate.PauliX(), [i])
                 else:
                     self.circuit.add_gate(
                         Gate.MultiControlX(self.num_qubits, convert_int_to_list(self.num_qubits - 1, i)),
@@ -146,13 +150,12 @@ class DuetchJosa_qiskit(QuantumAlgorithm):
         # Returns counts
         counts = result.get_counts(compiled_circuit)
         result = list(counts.keys())[0]
-        if result == '0'*(self.num_qubits-1):
+        if result == '0' * (self.num_qubits - 1):
             self.balance = False
             print("The function is constant")
         else:
             self.balance = True
             print("The function is balanced")
-
 
     '''
     Compile the Uf gate given the List of Uf input
@@ -163,7 +166,11 @@ class DuetchJosa_qiskit(QuantumAlgorithm):
         for i in range(0, 1 << (self.num_qubits - 1)):
             if self.UF[i] == 1:
                 if self.num_qubits == 2:
+                    if i == 0:
+                        self.circuit.x(i)
                     self.circuit.cx(0, 1)
+                    if i == 0:
+                        self.circuit.x(i)
                 else:
                     cond_lis = convert_int_to_list(self.num_qubits - 1, i)
                     for i in range(0, self.num_qubits - 1):
@@ -179,5 +186,5 @@ class DuetchJosa_qiskit(QuantumAlgorithm):
     def is_balance(self):
         return self.balance
 
-    def set_simulator(self,simulator):
-        self._simulator=simulator
+    def set_simulator(self, simulator):
+        self._simulator = simulator
