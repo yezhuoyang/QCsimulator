@@ -525,6 +525,59 @@ def main():
     return
 
 
+def train_best_example():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--epochs", type=int, default=1000, help="number of training epochs"
+    )
+
+    parser.add_argument("--pdb", action="store_true", help="debug with pdb")
+
+    args = parser.parse_args()
+
+    if args.pdb:
+        import pdb
+        pdb.set_trace()
+
+    seed = 42
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+
+    model = QModelFiveGeneral([0, 1], [1, 2], [0, 1], [1, 2], [0, 1]).to(device)
+
+    n_epochs = args.epochs
+    optimizer = optim.Adam(model.parameters(), lr=1e-2, weight_decay=0)
+    scheduler = CosineAnnealingLR(optimizer, T_max=n_epochs)
+
+    target_unitary = torch.tensor(
+        [
+            [1, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 0, 0, 0, 0, 0, 1, 0],
+        ]
+        , dtype=torch.complex64)
+
+    loss_list = []
+
+    for epoch in range(1, n_epochs + 1):
+        # print(f"Epoch {epoch}, LR: {optimizer.param_groups[0]['lr']}")
+        loss_list.append(train(target_unitary, model, optimizer))
+        scheduler.step()
+
+    print(model.parameters())
+
+    return
+
+
 def read_file_and_plot_histogram(file_path):
     # Read the content of the file
     with open(file_path, 'r') as file:
@@ -622,4 +675,5 @@ def plot_three_training_loss():
 
 if __name__ == "__main__":
     # read_file_and_plot_histogram("C:/Users/yezhu/OneDrive/Desktop/torchquantum/output.txt")
-    plot_three_training_loss()
+    #plot_three_training_loss()
+    train_best_example()
